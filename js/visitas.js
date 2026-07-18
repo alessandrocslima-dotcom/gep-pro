@@ -173,6 +173,8 @@ async function vtPreencherEtapa1() {
 
   // Carregar empresas do Firestore
   await vtCarregarEmpresas();
+  // Carregar secretarias
+  await vtCarregarSecretarias();
 
   // Se editando, preencher empresa selecionada
   if (vtDados.empresaId) {
@@ -257,6 +259,62 @@ function vtAcaoExcluir(id) {
 
 let vtContatos = []; // lista de contatos importantes
 let vtGPS = null;    // coordenadas GPS capturadas
+
+function vtToggleCliente() {
+  const tipo = document.querySelector('input[name="vtTipoCliente"]:checked').value;
+  document.getElementById('vtBlocoSecretaria').style.display = tipo === 'secretaria' ? 'block' : 'none';
+  document.getElementById('vtBlocoOutroCliente').style.display = tipo === 'outro' ? 'block' : 'none';
+}
+
+async function vtCarregarSecretarias() {
+  const sel = document.getElementById('vtSecretaria');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione a secretaria...</option>';
+  try {
+    const secs = await GepFirebase.listar('secretarias');
+    secs.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    secs.forEach(s => {
+      const op = document.createElement('option');
+      op.value = s.id;
+      op.textContent = s.nome + (s.sigla ? ' ('+s.sigla+')' : '');
+      sel.appendChild(op);
+    });
+  } catch(e) { console.error('Erro ao carregar secretarias:', e); }
+}
+
+let vtGPSRisco = null;
+
+function vtCapturarGPSRisco() {
+  const btn = document.getElementById('vtBtnGPSRisco');
+  if (!navigator.geolocation) { toast('GPS não disponível.', 'erro'); return; }
+  if (btn) { btn.textContent = '⏳ Capturando...'; btn.disabled = true; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      vtGPSRisco = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (btn) { btn.textContent = '✅ GPS capturado'; btn.disabled = false; }
+      toast('GPS do ponto de encontro capturado!', 'ok');
+    },
+    () => {
+      if (btn) { btn.textContent = '📍 Capturar GPS'; btn.disabled = false; }
+      toast('Não foi possível capturar o GPS.', 'erro');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function vtAbrirWazeRisco() {
+  const end = document.getElementById('vtPontoEncontro').value.trim();
+  if (vtGPSRisco) window.open('https://waze.com/ul?ll='+vtGPSRisco.lat+','+vtGPSRisco.lng+'&navigate=yes','_blank');
+  else if (end) window.open('https://waze.com/ul?q='+encodeURIComponent(end)+'&navigate=yes','_blank');
+  else toast('Digite o endereço ou capture o GPS primeiro.', 'erro');
+}
+
+function vtAbrirMapsRisco() {
+  const end = document.getElementById('vtPontoEncontro').value.trim();
+  if (vtGPSRisco) window.open('https://maps.google.com/?q='+vtGPSRisco.lat+','+vtGPSRisco.lng,'_blank');
+  else if (end) window.open('https://maps.google.com/?q='+encodeURIComponent(end),'_blank');
+  else toast('Digite o endereço ou capture o GPS primeiro.', 'erro');
+}
 
 function vtPreencherEtapa2() {
   // Preencher campos se já tiver dados
@@ -380,6 +438,16 @@ function vtAvancarEtapa2() {
 
   const riscoSim = document.getElementById('vtRiscoSim');
 
+  const tipoCliente = document.querySelector('input[name="vtTipoCliente"]:checked').value;
+  vtDados.tipoCliente   = tipoCliente;
+  if (tipoCliente === 'secretaria') {
+    const sel = document.getElementById('vtSecretaria');
+    vtDados.clienteId   = sel.value;
+    vtDados.clienteNome = sel.options[sel.selectedIndex]?.text || '';
+  } else {
+    vtDados.clienteId   = '';
+    vtDados.clienteNome = document.getElementById('vtOutroCliente').value.trim();
+  }
   vtDados.nomeEvento    = nomeEvento;
   vtDados.tipoEvento    = document.getElementById('vtTipoEvento').value.trim();
   vtDados.endereco      = endereco;
@@ -393,6 +461,7 @@ function vtAvancarEtapa2() {
   vtDados.publico       = document.getElementById('vtPublico').value.trim();
   vtDados.contatos      = vtContatos;
   vtDados.areaRisco     = riscoSim && riscoSim.checked;
+  vtDados.gpsRisco      = vtGPSRisco;
   vtDados.pontoEncontro = document.getElementById('vtPontoEncontro').value.trim();
   vtDados.contatoLocal  = document.getElementById('vtContatoLocal').value.trim();
 
@@ -416,6 +485,10 @@ window.vtAbrirFormulario  = vtAbrirFormulario;
 window.vtFecharFormulario = vtFecharFormulario;
 window.vtAvancarEtapa1    = vtAvancarEtapa1;
 window.vtAvancarEtapa2    = vtAvancarEtapa2;
+window.vtToggleCliente    = vtToggleCliente;
+window.vtCapturarGPSRisco = vtCapturarGPSRisco;
+window.vtAbrirWazeRisco   = vtAbrirWazeRisco;
+window.vtAbrirMapsRisco   = vtAbrirMapsRisco;
 window.vtToggleRisco      = vtToggleRisco;
 window.vtAdicionarContato = vtAdicionarContato;
 window.vtRemoverContato   = vtRemoverContato;
