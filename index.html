@@ -223,11 +223,105 @@
           </div>
         </div>
         <div class="vt-etapa" id="vtEtapa2">
-          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
-            <p>Etapa 2 — Local em construção...</p>
-            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+          <div class="card">
+            <div class="card-hdr"><h3>📍 Local do Evento</h3></div>
+
+            <div class="campo">
+              <label>Nome do Evento <span class="obrigatorio">*</span></label>
+              <input type="text" id="vtNomeEvento" placeholder="Ex: Inauguração do B.M Centro">
+            </div>
+
+            <div class="campo">
+              <label>Tipo de Evento</label>
+              <input type="text" id="vtTipoEvento" placeholder="Ex: Inauguração, Show, Formatura...">
+            </div>
+
+            <div class="campo">
+              <label>Endereço do Evento <span class="obrigatorio">*</span></label>
+              <input type="text" id="vtEndereco" placeholder="Rua, número, bairro, cidade">
+              <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
+                <button class="btn btn-secundario btn-sm" id="vtBtnGPS" onclick="vtCapturarGPS()">📍 Capturar GPS</button>
+                <button class="btn btn-secundario btn-sm" onclick="vtAbrirWaze()">🗺 Waze</button>
+                <button class="btn btn-secundario btn-sm" onclick="vtAbrirMaps()">📌 Google Maps</button>
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="campo">
+                <label>Data Início <span class="obrigatorio">*</span></label>
+                <input type="date" id="vtDataInicio">
+              </div>
+              <div class="campo">
+                <label>Data Fim</label>
+                <input type="date" id="vtDataFim">
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="campo">
+                <label>Hora Início <span class="obrigatorio">*</span></label>
+                <input type="time" id="vtHoraInicio">
+              </div>
+              <div class="campo">
+                <label>Hora Fim</label>
+                <input type="time" id="vtHoraFim">
+              </div>
+            </div>
+
+            <div class="row2">
+              <div class="campo">
+                <label>Data Montagem</label>
+                <input type="date" id="vtDataMontagem">
+              </div>
+              <div class="campo">
+                <label>Hora Montagem</label>
+                <input type="time" id="vtHoraMontagem">
+              </div>
+            </div>
+
+            <div class="campo">
+              <label>Público Estimado</label>
+              <input type="text" id="vtPublico" placeholder="Ex: 500 pessoas">
+            </div>
+
+            <!-- Contatos importantes -->
+            <div class="campo">
+              <label>Contatos Importantes (antes da montagem)</label>
+              <div style="display:flex;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
+                <input type="text" id="vtContatoNome" placeholder="Nome" style="flex:1;min-width:120px">
+                <input type="tel" id="vtContatoTel" placeholder="Telefone" style="flex:1;min-width:120px">
+                <button class="btn btn-secundario btn-sm" onclick="vtAdicionarContato()">+ Adicionar</button>
+              </div>
+              <div id="vtListaContatos"></div>
+            </div>
+
+            <!-- Área de risco -->
+            <div class="campo">
+              <label>⚠️ Área de Risco?</label>
+              <div style="display:flex;gap:1.5rem;margin-top:.4rem">
+                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;text-transform:none;font-weight:400;font-size:.9rem">
+                  <input type="radio" name="vtRisco" id="vtRiscoSim" value="sim" onchange="vtToggleRisco()"> Sim
+                </label>
+                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;text-transform:none;font-weight:400;font-size:.9rem">
+                  <input type="radio" name="vtRisco" id="vtRiscoNao" value="nao" onchange="vtToggleRisco()" checked> Não
+                </label>
+              </div>
+            </div>
+
+            <div id="vtBlocoRisco" style="display:none">
+              <div class="campo">
+                <label>Ponto de Encontro (endereço/GPS)</label>
+                <input type="text" id="vtPontoEncontro" placeholder="Endereço do ponto de encontro">
+              </div>
+              <div class="campo">
+                <label>Nome do Contato no Local</label>
+                <input type="text" id="vtContatoLocal" placeholder="Nome e telefone do contato">
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:1.5rem">
               <button class="btn btn-secundario" onclick="vtIrEtapa(1)">← Anterior</button>
-              <button class="btn btn-primario" onclick="vtIrEtapa(3)">Próximo →</button>
+              <button class="btn btn-primario" onclick="vtAvancarEtapa2()">Próximo →</button>
             </div>
           </div>
         </div>

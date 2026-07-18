@@ -140,6 +140,7 @@ function vtIrEtapa(etapa) {
 
   // Preencher dados se editando
   if (etapa === 1) vtPreencherEtapa1();
+  if (etapa === 2) vtPreencherEtapa2();
 }
 
 function vtAtualizarProgresso() {
@@ -249,6 +250,155 @@ function vtAcaoExcluir(id) {
     .catch(() => toast('Erro ao excluir.', 'erro'));
 }
 
+
+/* ══════════════════════════════════════
+   ETAPA 2 — LOCAL
+══════════════════════════════════════ */
+
+let vtContatos = []; // lista de contatos importantes
+let vtGPS = null;    // coordenadas GPS capturadas
+
+function vtPreencherEtapa2() {
+  // Preencher campos se já tiver dados
+  const campos = ['vtNomeEvento','vtTipoEvento','vtEndereco','vtDataInicio',
+                  'vtDataFim','vtHoraInicio','vtHoraFim','vtDataMontagem',
+                  'vtHoraMontagem','vtPublico','vtPontoEncontro','vtContatoLocal'];
+  const chaves = ['nomeEvento','tipoEvento','endereco','dataInicio',
+                  'dataFim','horaInicio','horaFim','dataMontagem',
+                  'horaMontagem','publico','pontoEncontro','contatoLocal'];
+
+  campos.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && vtDados[chaves[i]]) el.value = vtDados[chaves[i]];
+  });
+
+  // Área de risco
+  if (vtDados.areaRisco !== undefined) {
+    const sim = document.getElementById('vtRiscoSim');
+    const nao = document.getElementById('vtRiscoNao');
+    if (vtDados.areaRisco) { if(sim) sim.checked = true; }
+    else { if(nao) nao.checked = true; }
+    vtToggleRisco();
+  }
+
+  // Contatos
+  vtContatos = vtDados.contatos || [];
+  vtRenderizarContatos();
+}
+
+function vtToggleRisco() {
+  const sim = document.getElementById('vtRiscoSim');
+  const bloco = document.getElementById('vtBlocoRisco');
+  if (bloco) bloco.style.display = (sim && sim.checked) ? 'block' : 'none';
+}
+
+function vtAdicionarContato() {
+  const nome = document.getElementById('vtContatoNome').value.trim();
+  const tel  = document.getElementById('vtContatoTel').value.trim();
+  if (!nome) { toast('Digite o nome do contato.', 'erro'); return; }
+  vtContatos.push({ nome, tel });
+  document.getElementById('vtContatoNome').value = '';
+  document.getElementById('vtContatoTel').value  = '';
+  vtRenderizarContatos();
+}
+
+function vtRemoverContato(idx) {
+  vtContatos.splice(idx, 1);
+  vtRenderizarContatos();
+}
+
+function vtRenderizarContatos() {
+  const lista = document.getElementById('vtListaContatos');
+  if (!lista) return;
+  if (!vtContatos.length) {
+    lista.innerHTML = '<p style="color:#94A3B8;font-size:.8rem">Nenhum contato adicionado.</p>';
+    return;
+  }
+  lista.innerHTML = vtContatos.map((c, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .75rem;background:#F8FAFC;border-radius:8px;margin-bottom:.4rem;font-size:.85rem">
+      <div>
+        <span style="font-weight:600">${c.nome}</span>
+        ${c.tel ? `<span style="color:#64748B;margin-left:.5rem">${c.tel}</span>` : ''}
+      </div>
+      <button onclick="vtRemoverContato(${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:1rem">✕</button>
+    </div>`).join('');
+}
+
+function vtCapturarGPS() {
+  const btn = document.getElementById('vtBtnGPS');
+  if (!navigator.geolocation) {
+    toast('GPS não disponível neste dispositivo.', 'erro');
+    return;
+  }
+  if (btn) { btn.textContent = '⏳ Capturando...'; btn.disabled = true; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      vtGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (btn) { btn.textContent = '✅ GPS capturado'; btn.disabled = false; }
+      toast('GPS capturado com sucesso!', 'ok');
+    },
+    err => {
+      if (btn) { btn.textContent = '📍 Capturar GPS'; btn.disabled = false; }
+      toast('Não foi possível capturar o GPS.', 'erro');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function vtAbrirWaze() {
+  const end = document.getElementById('vtEndereco').value.trim();
+  if (vtGPS) {
+    window.open(`https://waze.com/ul?ll=${vtGPS.lat},${vtGPS.lng}&navigate=yes`, '_blank');
+  } else if (end) {
+    window.open(`https://waze.com/ul?q=${encodeURIComponent(end)}&navigate=yes`, '_blank');
+  } else {
+    toast('Digite o endereço ou capture o GPS primeiro.', 'erro');
+  }
+}
+
+function vtAbrirMaps() {
+  const end = document.getElementById('vtEndereco').value.trim();
+  if (vtGPS) {
+    window.open(`https://maps.google.com/?q=${vtGPS.lat},${vtGPS.lng}`, '_blank');
+  } else if (end) {
+    window.open(`https://maps.google.com/?q=${encodeURIComponent(end)}`, '_blank');
+  } else {
+    toast('Digite o endereço ou capture o GPS primeiro.', 'erro');
+  }
+}
+
+function vtAvancarEtapa2() {
+  const nomeEvento = document.getElementById('vtNomeEvento').value.trim();
+  const endereco   = document.getElementById('vtEndereco').value.trim();
+  const dataInicio = document.getElementById('vtDataInicio').value;
+  const horaInicio = document.getElementById('vtHoraInicio').value;
+
+  if (!nomeEvento) { toast('Digite o nome do evento.', 'erro'); document.getElementById('vtNomeEvento').focus(); return; }
+  if (!endereco)   { toast('Digite o endereço do evento.', 'erro'); document.getElementById('vtEndereco').focus(); return; }
+  if (!dataInicio) { toast('Selecione a data de início.', 'erro'); return; }
+  if (!horaInicio) { toast('Selecione a hora de início.', 'erro'); return; }
+
+  const riscoSim = document.getElementById('vtRiscoSim');
+
+  vtDados.nomeEvento    = nomeEvento;
+  vtDados.tipoEvento    = document.getElementById('vtTipoEvento').value.trim();
+  vtDados.endereco      = endereco;
+  vtDados.gps           = vtGPS;
+  vtDados.dataInicio    = dataInicio;
+  vtDados.dataFim       = document.getElementById('vtDataFim').value;
+  vtDados.horaInicio    = horaInicio;
+  vtDados.horaFim       = document.getElementById('vtHoraFim').value;
+  vtDados.dataMontagem  = document.getElementById('vtDataMontagem').value;
+  vtDados.horaMontagem  = document.getElementById('vtHoraMontagem').value;
+  vtDados.publico       = document.getElementById('vtPublico').value.trim();
+  vtDados.contatos      = vtContatos;
+  vtDados.areaRisco     = riscoSim && riscoSim.checked;
+  vtDados.pontoEncontro = document.getElementById('vtPontoEncontro').value.trim();
+  vtDados.contatoLocal  = document.getElementById('vtContatoLocal').value.trim();
+
+  vtIrEtapa(3);
+}
+
 /* ── Exportar ── */
 window.GepVisitas = {
   inicializar:      vtInicializar,
@@ -265,6 +415,13 @@ window.GepVisitas = {
 window.vtAbrirFormulario  = vtAbrirFormulario;
 window.vtFecharFormulario = vtFecharFormulario;
 window.vtAvancarEtapa1    = vtAvancarEtapa1;
+window.vtAvancarEtapa2    = vtAvancarEtapa2;
+window.vtToggleRisco      = vtToggleRisco;
+window.vtAdicionarContato = vtAdicionarContato;
+window.vtRemoverContato   = vtRemoverContato;
+window.vtCapturarGPS      = vtCapturarGPS;
+window.vtAbrirWaze        = vtAbrirWaze;
+window.vtAbrirMaps        = vtAbrirMaps;
 window.vtIrEtapa          = vtIrEtapa;
 window.vtAcaoEditar       = vtAcaoEditar;
 window.vtAcaoWA           = vtAcaoWA;
