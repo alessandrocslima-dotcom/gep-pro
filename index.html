@@ -350,11 +350,66 @@
           </div>
         </div>
         <div class="vt-etapa" id="vtEtapa3">
-          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
-            <p>Etapa 3 — Estrutura em construção...</p>
-            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+          <div class="card">
+            <div class="card-hdr"><h3>📋 Demandas do Evento</h3></div>
+
+            <!-- Cabeçalho da tabela -->
+            <div style="display:grid;grid-template-columns:2fr 2fr 80px 80px 90px 36px;gap:.5rem;padding:.4rem .5rem;margin-bottom:.25rem">
+              <span style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase">Serviço</span>
+              <span style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase">Descrição</span>
+              <span style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;text-align:center">Qtde</span>
+              <span style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;text-align:center">Freq.</span>
+              <span style="font-size:.7rem;font-weight:700;color:#64748B;text-transform:uppercase;text-align:center">Período</span>
+              <span></span>
+            </div>
+
+            <!-- Lista de demandas -->
+            <div id="vtListaDemandas"></div>
+
+            <!-- Formulário para adicionar -->
+            <div style="border:1.5px dashed #E2E8F0;border-radius:10px;padding:1rem;margin-top:.75rem">
+              <div style="font-size:.8rem;font-weight:600;color:#64748B;margin-bottom:.75rem">➕ Adicionar serviço</div>
+
+              <!-- Busca com autocomplete -->
+              <div style="position:relative;margin-bottom:.5rem">
+                <input type="text" id="vtBuscaServico"
+                       placeholder="Digite o serviço ou busque no catálogo..."
+                       oninput="vtBuscarCatalogo()"
+                       style="width:100%;padding:.65rem .9rem;border:1.5px solid #E2E8F0;border-radius:8px;font-size:.875rem;outline:none">
+                <div id="vtSugestoes"
+                     style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto">
+                </div>
+              </div>
+
+              <div class="campo" style="margin-bottom:.5rem">
+                <input type="text" id="vtDescServico" placeholder="Descrição do serviço (opcional)">
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.5rem;align-items:end">
+                <div class="campo" style="margin:0">
+                  <label>Qtde</label>
+                  <input type="number" id="vtQtdeServico" value="1" min="1" style="text-align:center">
+                </div>
+                <div class="campo" style="margin:0">
+                  <label>Freq.</label>
+                  <input type="number" id="vtFreqServico" value="1" min="1" style="text-align:center">
+                </div>
+                <div class="campo" style="margin:0">
+                  <label>Período</label>
+                  <select id="vtPeriodoServico">
+                    <option value="Unid">Unid</option>
+                    <option value="Dia">Dia</option>
+                  </select>
+                </div>
+                <button class="btn btn-primario" onclick="vtAdicionarDemanda()" style="margin-bottom:0;height:40px">
+                  + Adicionar
+                </button>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:1.5rem">
               <button class="btn btn-secundario" onclick="vtIrEtapa(2)">← Anterior</button>
-              <button class="btn btn-primario" onclick="vtIrEtapa(4)">Próximo →</button>
+              <button class="btn btn-primario" onclick="vtAvancarEtapa3()">Próximo →</button>
             </div>
           </div>
         </div>
