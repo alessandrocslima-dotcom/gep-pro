@@ -141,6 +141,7 @@ function vtIrEtapa(etapa) {
   // Preencher dados se editando
   if (etapa === 1) vtPreencherEtapa1();
   if (etapa === 2) vtPreencherEtapa2();
+  if (etapa === 3) vtPreencherEtapa3();
 }
 
 function vtAtualizarProgresso() {
@@ -468,6 +469,98 @@ function vtAvancarEtapa2() {
   vtIrEtapa(3);
 }
 
+
+/* ══════════════════════════════════════
+   ETAPA 3 — ESTRUTURA / DEMANDAS
+══════════════════════════════════════ */
+
+let vtDemandas = [];
+let vtCatalogo = [];
+
+async function vtPreencherEtapa3() {
+  // Carregar catálogo
+  try {
+    vtCatalogo = await GepFirebase.listar('catalogo');
+    vtCatalogo.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+  } catch(e) { vtCatalogo = []; }
+
+  // Preencher demandas se já tiver dados
+  vtDemandas = vtDados.demandas || [];
+  vtRenderizarDemandas();
+}
+
+function vtRenderizarDemandas() {
+  const lista = document.getElementById('vtListaDemandas');
+  if (!lista) return;
+
+  if (!vtDemandas.length) {
+    lista.innerHTML = '<p style="color:#94A3B8;font-size:.85rem;text-align:center;padding:1rem">Nenhuma demanda adicionada.<br>Clique em <strong>+ Adicionar</strong> para começar.</p>';
+    return;
+  }
+
+  lista.innerHTML = vtDemandas.map((d, i) => `
+    <div style="display:grid;grid-template-columns:2fr 2fr 80px 80px 90px 36px;gap:.5rem;align-items:center;padding:.5rem;background:#F8FAFC;border-radius:8px;margin-bottom:.4rem">
+      <div style="font-size:.85rem;font-weight:600;color:#0F172A">${d.servico || '—'}</div>
+      <div style="font-size:.8rem;color:#64748B">${d.descricao || '—'}</div>
+      <div style="font-size:.8rem;text-align:center;color:#0F172A">${d.qtde || 1}</div>
+      <div style="font-size:.8rem;text-align:center;color:#0F172A">${d.freq || 1}</div>
+      <div style="font-size:.8rem;text-align:center"><span style="background:#DBEAFE;color:#1D4ED8;padding:.15rem .5rem;border-radius:99px;font-size:.75rem;font-weight:600">${d.periodo || 'Unid'}</span></div>
+      <button onclick="vtRemoverDemanda(${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:1rem">✕</button>
+    </div>`).join('');
+}
+
+function vtBuscarCatalogo() {
+  const termo = document.getElementById('vtBuscaServico').value.toLowerCase().trim();
+  const sugestoes = document.getElementById('vtSugestoes');
+  if (!termo || termo.length < 2) { sugestoes.style.display = 'none'; return; }
+
+  const filtrados = vtCatalogo.filter(c => (c.nome||'').toLowerCase().includes(termo)).slice(0, 8);
+  if (!filtrados.length) { sugestoes.style.display = 'none'; return; }
+
+  sugestoes.innerHTML = filtrados.map(c => `
+    <div onclick="vtSelecionarServico('${c.nome}')"
+         style="padding:.6rem 1rem;cursor:pointer;font-size:.875rem;border-bottom:1px solid #F1F5F9;hover:background:#F8FAFC">
+      ${c.nome}
+    </div>`).join('');
+  sugestoes.style.display = 'block';
+}
+
+function vtSelecionarServico(nome) {
+  document.getElementById('vtBuscaServico').value = nome;
+  document.getElementById('vtSugestoes').style.display = 'none';
+}
+
+function vtAdicionarDemanda() {
+  const servico  = document.getElementById('vtBuscaServico').value.trim();
+  const descricao = document.getElementById('vtDescServico').value.trim();
+  const qtde     = parseInt(document.getElementById('vtQtdeServico').value) || 1;
+  const freq     = parseInt(document.getElementById('vtFreqServico').value) || 1;
+  const periodo  = document.getElementById('vtPeriodoServico').value;
+
+  if (!servico) { toast('Digite ou selecione o serviço.', 'erro'); document.getElementById('vtBuscaServico').focus(); return; }
+
+  vtDemandas.push({ servico, descricao, qtde, freq, periodo });
+  vtRenderizarDemandas();
+
+  // Limpar campos
+  document.getElementById('vtBuscaServico').value  = '';
+  document.getElementById('vtDescServico').value   = '';
+  document.getElementById('vtQtdeServico').value   = '1';
+  document.getElementById('vtFreqServico').value   = '1';
+  document.getElementById('vtPeriodoServico').value = 'Unid';
+  document.getElementById('vtBuscaServico').focus();
+}
+
+function vtRemoverDemanda(idx) {
+  vtDemandas.splice(idx, 1);
+  vtRenderizarDemandas();
+}
+
+function vtAvancarEtapa3() {
+  vtDados.demandas = vtDemandas;
+  vtIrEtapa(4);
+}
+
 /* ── Exportar ── */
 window.GepVisitas = {
   inicializar:      vtInicializar,
@@ -489,6 +582,11 @@ window.vtToggleCliente    = vtToggleCliente;
 window.vtCapturarGPSRisco = vtCapturarGPSRisco;
 window.vtAbrirWazeRisco   = vtAbrirWazeRisco;
 window.vtAbrirMapsRisco   = vtAbrirMapsRisco;
+window.vtBuscarCatalogo   = vtBuscarCatalogo;
+window.vtSelecionarServico = vtSelecionarServico;
+window.vtAdicionarDemanda = vtAdicionarDemanda;
+window.vtRemoverDemanda   = vtRemoverDemanda;
+window.vtAvancarEtapa3    = vtAvancarEtapa3;
 window.vtToggleRisco      = vtToggleRisco;
 window.vtAdicionarContato = vtAdicionarContato;
 window.vtRemoverContato   = vtRemoverContato;
