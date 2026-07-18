@@ -226,6 +226,25 @@
           <div class="card">
             <div class="card-hdr"><h3>📍 Local do Evento</h3></div>
 
+            <!-- Cliente / Secretaria -->
+            <div class="campo">
+              <label>Cliente / Secretaria <span class="obrigatorio">*</span></label>
+              <div style="display:flex;gap:1.5rem;margin-bottom:.75rem">
+                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;text-transform:none;font-weight:400;font-size:.9rem">
+                  <input type="radio" name="vtTipoCliente" value="secretaria" onchange="vtToggleCliente()" checked> Secretaria cadastrada
+                </label>
+                <label style="display:flex;align-items:center;gap:.4rem;cursor:pointer;text-transform:none;font-weight:400;font-size:.9rem">
+                  <input type="radio" name="vtTipoCliente" value="outro" onchange="vtToggleCliente()"> Outro
+                </label>
+              </div>
+              <div id="vtBlocoSecretaria">
+                <select id="vtSecretaria"><option value="">Selecione a secretaria...</option></select>
+              </div>
+              <div id="vtBlocoOutroCliente" style="display:none">
+                <input type="text" id="vtOutroCliente" placeholder="Nome do cliente ou organização">
+              </div>
+            </div>
+
             <div class="campo">
               <label>Nome do Evento <span class="obrigatorio">*</span></label>
               <input type="text" id="vtNomeEvento" placeholder="Ex: Inauguração do B.M Centro">
@@ -310,8 +329,13 @@
 
             <div id="vtBlocoRisco" style="display:none">
               <div class="campo">
-                <label>Ponto de Encontro (endereço/GPS)</label>
+                <label>Ponto de Encontro</label>
                 <input type="text" id="vtPontoEncontro" placeholder="Endereço do ponto de encontro">
+                <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap">
+                  <button class="btn btn-secundario btn-sm" id="vtBtnGPSRisco" onclick="vtCapturarGPSRisco()">📍 Capturar GPS</button>
+                  <button class="btn btn-secundario btn-sm" onclick="vtAbrirWazeRisco()">🗺 Waze</button>
+                  <button class="btn btn-secundario btn-sm" onclick="vtAbrirMapsRisco()">📌 Google Maps</button>
+                </div>
               </div>
               <div class="campo">
                 <label>Nome do Contato no Local</label>
@@ -520,7 +544,6 @@
   GepFirebase.inicializar();
   GepAuth.inicializar();
 </script>
-  
 
 </body>
 </html>
