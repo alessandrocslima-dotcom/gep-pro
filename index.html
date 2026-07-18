@@ -178,14 +178,85 @@
     <main id="views">
 
       <!-- Dashboard / Visitas Técnicas -->
-      <div class="view" id="vwDashboard">
-        <div class="pg-titulo">
-          <h1>📝 Visitas Técnicas</h1>
-          <p>Gerencie as visitas técnicas da equipe</p>
+      <div class="view ativa" id="vwDashboard">
+        <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <div>
+            <h1>📝 Visitas Técnicas</h1>
+            <p>Gerencie as visitas técnicas da equipe</p>
+          </div>
+          <button class="btn btn-primario" onclick="vtAbrirFormulario()">+ Nova Visita</button>
         </div>
-        <div class="card" style="text-align:center; padding: 3rem; color: #94A3B8;">
-          <div style="font-size:3rem; margin-bottom:1rem">📝</div>
-          <p>Módulo de Visitas Técnicas em construção...</p>
+        <div id="vtLista"></div>
+      </div>
+
+      <!-- Formulário de Visita Técnica -->
+      <div class="view" id="vwVtForm">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+          <button class="btn btn-secundario btn-sm" onclick="vtFecharFormulario()">← Voltar</button>
+          <span id="vtTextoEtapa" style="font-size:.85rem;color:#64748B;font-weight:600"></span>
+        </div>
+        <div class="vt-progresso">
+          <div class="vt-prog-item"><div class="vt-prog-bolinha" id="vtProg1"></div><span>Empresa</span></div>
+          <div class="vt-prog-linha"></div>
+          <div class="vt-prog-item"><div class="vt-prog-bolinha" id="vtProg2"></div><span>Local</span></div>
+          <div class="vt-prog-linha"></div>
+          <div class="vt-prog-item"><div class="vt-prog-bolinha" id="vtProg3"></div><span>Estrutura</span></div>
+          <div class="vt-prog-linha"></div>
+          <div class="vt-prog-item"><div class="vt-prog-bolinha" id="vtProg4"></div><span>Detalhes</span></div>
+          <div class="vt-prog-linha"></div>
+          <div class="vt-prog-item"><div class="vt-prog-bolinha" id="vtProg5"></div><span>Resumo</span></div>
+        </div>
+        <div class="vt-etapa" id="vtEtapa1">
+          <div class="card">
+            <div class="card-hdr"><h3>🏢 Empresa</h3></div>
+            <div class="campo">
+              <label>Empresa <span class="obrigatorio">*</span></label>
+              <select id="vtEmpresa"><option value="">Selecione a empresa...</option></select>
+            </div>
+            <div class="campo">
+              <label>Produtor Responsável</label>
+              <input type="text" id="vtProdutor" readonly style="background:#F1F5F9;color:#64748B;cursor:not-allowed">
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:1.5rem">
+              <button class="btn btn-primario" onclick="vtAvancarEtapa1()">Próximo →</button>
+            </div>
+          </div>
+        </div>
+        <div class="vt-etapa" id="vtEtapa2">
+          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
+            <p>Etapa 2 — Local em construção...</p>
+            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+              <button class="btn btn-secundario" onclick="vtIrEtapa(1)">← Anterior</button>
+              <button class="btn btn-primario" onclick="vtIrEtapa(3)">Próximo →</button>
+            </div>
+          </div>
+        </div>
+        <div class="vt-etapa" id="vtEtapa3">
+          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
+            <p>Etapa 3 — Estrutura em construção...</p>
+            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+              <button class="btn btn-secundario" onclick="vtIrEtapa(2)">← Anterior</button>
+              <button class="btn btn-primario" onclick="vtIrEtapa(4)">Próximo →</button>
+            </div>
+          </div>
+        </div>
+        <div class="vt-etapa" id="vtEtapa4">
+          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
+            <p>Etapa 4 — Detalhes em construção...</p>
+            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+              <button class="btn btn-secundario" onclick="vtIrEtapa(3)">← Anterior</button>
+              <button class="btn btn-primario" onclick="vtIrEtapa(5)">Próximo →</button>
+            </div>
+          </div>
+        </div>
+        <div class="vt-etapa" id="vtEtapa5">
+          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
+            <p>Etapa 5 — Resumo em construção...</p>
+            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+              <button class="btn btn-secundario" onclick="vtIrEtapa(4)">← Anterior</button>
+              <button class="btn btn-primario">✅ Salvar Visita</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -333,7 +404,7 @@
 <script src="js/nav.js"></script>
 
 <!-- GEP — Módulos (serão adicionados aqui conforme construídos) -->
-<!-- <script src="js/visitas.js"></script>    -->
+<script src="js/visitas.js"></script>
 <!-- <script src="js/orcamentos.js"></script> -->
 <!-- <script src="js/agenda.js"></script>     -->
 <!-- <script src="js/realizados.js"></script> -->

@@ -524,3 +524,126 @@ a { color: var(--cor-acento); text-decoration: none; }
   z-index: 99;
 }
 #sbOverlay.ativo { display: block; }
+
+/* ══════════════════════════════════════
+   VISITAS TÉCNICAS
+══════════════════════════════════════ */
+
+/* Lista vazia / carregando */
+.vt-vazio, .vt-carregando, .vt-erro {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--cor-texto-leve);
+}
+.vt-vazio-ico { font-size: 3rem; margin-bottom: 1rem; }
+
+/* Card de VT */
+.vt-card {
+  background: var(--cor-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 1rem;
+  margin-bottom: .75rem;
+  display: flex;
+  gap: 1rem;
+  box-shadow: var(--sombra);
+  transition: box-shadow .15s;
+}
+.vt-card:hover { box-shadow: var(--sombra-md); }
+
+.vt-card-data {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  background: var(--cor-acento);
+  border-radius: 8px;
+  padding: .5rem;
+  color: #fff;
+}
+.vt-card-dia { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+.vt-card-mes { font-size: .65rem; font-weight: 600; text-transform: uppercase; }
+
+.vt-card-info { flex: 1; min-width: 0; }
+.vt-card-nome {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  margin-bottom: .35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vt-card-detalhes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  font-size: .75rem;
+  color: var(--cor-texto-leve);
+  margin-bottom: .75rem;
+}
+.vt-card-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+/* Progresso do formulário */
+.vt-progresso {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: .5rem;
+}
+.vt-prog-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+  min-width: 60px;
+}
+.vt-prog-item span {
+  font-size: .65rem;
+  color: var(--cor-texto-leve);
+  text-align: center;
+  white-space: nowrap;
+}
+.vt-prog-bolinha {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--cor-borda);
+  border: 2px solid var(--cor-borda);
+  transition: all .2s;
+}
+.vt-prog-bolinha.ativa {
+  background: var(--cor-acento);
+  border-color: var(--cor-acento);
+  box-shadow: 0 0 0 4px rgba(59,130,246,.2);
+}
+.vt-prog-bolinha.concluida {
+  background: var(--cor-sucesso);
+  border-color: var(--cor-sucesso);
+}
+.vt-prog-bolinha.concluida::after {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 700;
+}
+.vt-prog-linha {
+  flex: 1;
+  height: 2px;
+  background: var(--cor-borda);
+  margin: 0 .25rem;
+  margin-bottom: 1.2rem;
+}
+
+/* Etapas do formulário */
+.vt-etapa { display: none; }
+.vt-etapa.ativa { display: block; }
