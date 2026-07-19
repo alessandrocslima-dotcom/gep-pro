@@ -465,7 +465,7 @@
           <!-- Barra superior -->
           <div class="orc-topbar">
             <button class="btn btn-secundario btn-sm" onclick="orcVoltarLista()">← Voltar</button>
-            <div class="orc-topbar-titulo">💰 Planilha Inicial</div>
+            <div class="orc-topbar-titulo">💰 Orçamento</div>
             <div style="display:flex;gap:.5rem;align-items:center">
               <select id="orcStatus" class="orc-status-sel" onchange="orcAtualizarTotais()">
                 <option value="elaboracao">✏️ Em elaboração</option>
@@ -476,6 +476,15 @@
               <button class="btn btn-primario btn-sm" id="orcBtnSalvar" onclick="orcSalvar()">💾 Salvar</button>
             </div>
           </div>
+
+          <!-- Abas estilo Excel -->
+          <div class="orc-abas-excel">
+            <button class="orc-aba-excel ativa" id="orcAbaInicial" onclick="orcIrAba('inicial')">📋 Planilha Inicial</button>
+            <button class="orc-aba-excel" id="orcAbaFechamento" onclick="orcIrAba('fechamento')">🔒 Fechamento</button>
+          </div>
+
+          <!-- CONTEÚDO ABA INICIAL -->
+          <div id="orcConteudoInicial">
 
           <!-- CABEÇALHO -->
           <div class="orc-section">
@@ -600,6 +609,111 @@
               <span class="orc-produtor-nome" id="orcProdutorNome">—</span>
             </div>
           </div>
+
+          </div><!-- /orcConteudoInicial -->
+
+          <!-- CONTEÚDO ABA FECHAMENTO -->
+          <div id="orcConteudoFechamento" style="display:none">
+
+            <!-- CABEÇALHO — só leitura -->
+            <div class="orc-section">
+              <div class="orc-section-titulo">FECHAMENTO — CABEÇALHO DO EVENTO</div>
+              <div class="orc-cabecalho-grid">
+                <div class="orc-cab-row">
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">Nº DO EVENTO</div>
+                    <div class="orc-cab-readonly" id="fchNumEvento">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-md">
+                    <div class="orc-cab-label">CLIENTE</div>
+                    <div class="orc-cab-readonly" id="fchCliente">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-lg">
+                    <div class="orc-cab-label">NOME DO EVENTO</div>
+                    <div class="orc-cab-readonly" id="fchNomeEvento">—</div>
+                  </div>
+                </div>
+                <div class="orc-cab-row">
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">DATA INÍCIO</div>
+                    <div class="orc-cab-readonly" id="fchDataInicio">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">DATA FIM</div>
+                    <div class="orc-cab-readonly" id="fchDataFim">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">HORA INÍCIO</div>
+                    <div class="orc-cab-readonly" id="fchHoraInicio">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">HORA FIM</div>
+                    <div class="orc-cab-readonly" id="fchHoraFim">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">PÚBLICO ESTIMADO</div>
+                    <div class="orc-cab-readonly" id="fchPublico">—</div>
+                  </div>
+                </div>
+                <div class="orc-cab-row">
+                  <div class="orc-cab-field" style="flex:3">
+                    <div class="orc-cab-label">LOCAL</div>
+                    <div class="orc-cab-readonly" id="fchLocal">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">DATA MONTAGEM</div>
+                    <div class="orc-cab-readonly" id="fchDataMont">—</div>
+                  </div>
+                  <div class="orc-cab-field orc-cab-sm">
+                    <div class="orc-cab-label">HORA MONTAGEM</div>
+                    <div class="orc-cab-readonly" id="fchHoraMont">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TABELA DE SERVIÇOS — editável -->
+            <div class="orc-section">
+              <div class="orc-section-header">
+                <div class="orc-section-titulo">SERVIÇOS REALIZADOS</div>
+                <button class="btn btn-secundario btn-sm" onclick="fchAdicionarLinha()">+ Adicionar linha</button>
+              </div>
+              <div class="orc-tabela-wrap">
+                <table class="orc-tabela">
+                  <thead>
+                    <tr>
+                      <th>SERVIÇO</th>
+                      <th>DESCRIÇÃO DO SERVIÇO</th>
+                      <th>QTDE</th>
+                      <th>PREÇO UNIT.</th>
+                      <th>FREQ.</th>
+                      <th>UND</th>
+                      <th>VALOR FINAL</th>
+                      <th>FORNECEDOR</th>
+                      <th>FORMA PGTO</th>
+                      <th>OBS</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody id="fchTbody"></tbody>
+                </table>
+              </div>
+              <div class="orc-subtotal">
+                SUBTOTAL DOS SERVIÇOS: <span id="fchSubtotal">R$ 0,00</span>
+              </div>
+            </div>
+
+            <!-- RODAPÉ -->
+            <div class="orc-section orc-totais">
+              <div class="orc-produtor-row">
+                <span style="font-size:.8rem;color:#64748B">Produtor Responsável:</span>
+                <span class="orc-produtor-nome" id="fchProdutorNome">—</span>
+                <span style="margin-left:auto;font-size:.8rem;color:#64748B">Empresa:</span>
+                <span class="orc-produtor-nome" id="fchEmpresaNome">—</span>
+              </div>
+            </div>
+
+          </div><!-- /orcConteudoFechamento -->
 
         </div><!-- /orcViewPlanilha -->
       </div>
