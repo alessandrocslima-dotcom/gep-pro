@@ -62,27 +62,88 @@ async function orcRenderizarLista() {
     };
 
     container.innerHTML = orcamentos.map(o => {
-      const st = STATUS[o.status] || STATUS.elaboracao;
+      const st    = STATUS[o.status] || STATUS.elaboracao;
       const total = orcCalcularTotal(o.linhas || []);
+      const data  = o.dataInicio ? new Date(o.dataInicio+'T00:00:00').toLocaleDateString('pt-BR') : '—';
+      const hora  = (o.horaInicio || '') + (o.horaFim ? ' às ' + o.horaFim : '');
       return `
-        <div class="orc-card" onclick="orcAbrirPlanilha('${o.id}')">
-          <div class="orc-card-left">
-            <div class="orc-card-nome">${o.nomeEvento || 'Sem nome'}</div>
-            <div class="orc-card-info">
-              ${o.nomeEvento ? `<span>📅 ${o.dataInicio ? new Date(o.dataInicio+'T00:00:00').toLocaleDateString('pt-BR') : '—'}</span>` : ''}
-              ${o.empresaNome ? `<span class="badge-inter">${o.empresaNome}</span>` : ''}
-              ${o.produtorNome ? `<span>👤 ${o.produtorNome}</span>` : ''}
+        <div class="orc-card">
+          <div class="orc-card-topo">
+            <div class="orc-card-esquerda">
+              ${o.numEvento ? `<div class="orc-card-num">Nº ${o.numEvento}</div>` : ''}
+              <div class="orc-card-nome">${o.nomeEvento || 'Sem nome'}</div>
+              <div class="orc-card-info">
+                ${o.local    ? `<span>📍 ${o.local}</span>` : ''}
+                ${hora       ? `<span>🕐 ${hora}</span>` : ''}
+                ${o.empresaNome  ? `<span class="badge-inter">${o.empresaNome}</span>` : ''}
+                ${o.produtorNome ? `<span>👤 ${o.produtorNome}</span>` : ''}
+                ${o.dataInicio   ? `<span>📅 ${data}</span>` : ''}
+              </div>
+            </div>
+            <div class="orc-card-direita">
+              <div class="orc-card-total">R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
+              <span class="orc-card-status" style="background:${st.bg};color:${st.cor}">${st.label}</span>
             </div>
           </div>
-          <div class="orc-card-right">
-            <div class="orc-card-total">R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
-            <span class="orc-card-status" style="background:${st.bg};color:${st.cor}">${st.label}</span>
+          <div class="orc-card-acoes">
+            <button class="btn btn-sucesso btn-sm" onclick="orcWACotacao('${o.id}')">💬 WA Cotação</button>
+            <button class="btn btn-secundario btn-sm" onclick="orcAbrirPlanilha('${o.id}')">✏️ Editar</button>
+            <button class="btn btn-secundario btn-sm" onclick="toast('Exportar Excel em breve...','ok')">📥 Exportar</button>
+            <button class="btn btn-perigo btn-sm" onclick="orcExcluir('${o.id}')">🗑 Excluir</button>
           </div>
         </div>`;
     }).join('');
 
   } catch(e) {
     container.innerHTML = '<p style="color:#DC2626;font-size:.85rem;padding:1rem">Erro ao carregar orçamentos.</p>';
+  }
+}
+
+/* ══════════════════════════════════════
+   AÇÕES DO CARD
+══════════════════════════════════════ */
+
+async function orcWACotacao(id) {
+  try {
+    const orc = await GepFirebase.buscar('orcamentos', id);
+    if (!orc || !orc.linhas || !orc.linhas.length) {
+      toast('Nenhuma demanda no orçamento.', 'erro');
+      return;
+    }
+
+    function fmtData(iso) {
+      if (!iso) return '—';
+      return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR');
+    }
+
+    let msg = '💰 SOLICITAÇÃO DE COTAÇÃO\n';
+    msg += '━━━━━━━━━━━━━━━━━━━━━━\n\n';
+    msg += '📋 EVENTO: ' + (orc.nomeEvento || '—') + '\n';
+    msg += '📅 Data: ' + fmtData(orc.dataInicio) + (orc.horaInicio ? ' às ' + orc.horaInicio : '') + '\n';
+    msg += '📍 Local: ' + (orc.local || '—') + '\n\n';
+    msg += '📦 ITENS PARA COTAÇÃO:\n';
+    orc.linhas.forEach((l, i) => {
+      msg += `${i+1}. ${l.servico}`;
+      if (l.descricao) msg += ` — ${l.descricao}`;
+      msg += ` | Qtd: ${l.qtde} | Freq: ${l.freq} | ${l.periodo}\n`;
+    });
+    msg += '\nPor favor, informe o valor unitário de cada item.\n';
+    msg += '\nAtenciosamente,\n' + (orc.produtorNome || 'Produtor') + ' — InterEventos';
+
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  } catch(e) {
+    toast('Erro ao gerar mensagem.', 'erro');
+  }
+}
+
+async function orcExcluir(id) {
+  if (!GepUtils.confirmar('Excluir este orçamento? Esta ação não pode ser desfeita.')) return;
+  try {
+    await GepFirebase.excluir('orcamentos', id);
+    toast('Orçamento excluído.', 'ok');
+    orcRenderizarLista();
+  } catch(e) {
+    toast('Erro ao excluir.', 'erro');
   }
 }
 
@@ -349,3 +410,5 @@ window.orcUpdateLinha    = orcUpdateLinha;
 window.orcRecalcularLinha = orcRecalcularLinha;
 window.orcAtualizarTotais = orcAtualizarTotais;
 window.orcSalvar         = orcSalvar;
+window.orcWACotacao       = orcWACotacao;
+window.orcExcluir         = orcExcluir;
