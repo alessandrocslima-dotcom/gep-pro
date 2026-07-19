@@ -279,7 +279,9 @@ function vtAcaoWA(id) {
       msg += '- 📍 https://maps.google.com/?q=' + vt.gps.lat + ',' + vt.gps.lng + '\n';
       msg += '- 🗺 https://waze.com/ul?ll=' + vt.gps.lat + ',' + vt.gps.lng + '&navigate=yes\n';
     } else if (vt.endereco) {
-      msg += '- 📍 https://maps.google.com/?q=' + encodeURIComponent(vt.endereco) + '\n';
+      const endEnc = encodeURIComponent(vt.endereco);
+      msg += '- 📍 https://maps.google.com/?q=' + endEnc + '\n';
+      msg += '- 🗺 https://waze.com/ul?q=' + endEnc + '&navigate=yes\n';
     }
 
     if (vt.dataInicio) msg += '- Data: ' + fmtData(vt.dataInicio) + (vt.horaInicio ? ' às ' + vt.horaInicio : '') + '\n';
