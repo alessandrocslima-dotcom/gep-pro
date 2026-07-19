@@ -497,7 +497,10 @@ function fchCarregar() {
   const prodEl = document.getElementById('fchProdutorNome');
   if (prodEl) prodEl.textContent = document.getElementById('orcProdutorNome')?.textContent || '—';
   const empEl = document.getElementById('fchEmpresaNome');
-  if (empEl) empEl.textContent = (GepAuth.usuario?.empresaNome || GepAuth.usuario?.empresa || '—');
+  const empId   = GepAuth.usuario?.empresa || '';
+  const empNome = GepAuth.usuario?.empresaNome ||
+    (empId === 'inter' ? 'InterEventos' : empId === 'vivere' ? 'Vivere' : empId === 'ancom' ? 'AN COM' : empId) || '—';
+  if (empEl) empEl.textContent = empNome;
 
   // Sincronizar linhas da Inicial se fechamento ainda não foi editado
   if (!fchLinhas.length) {
