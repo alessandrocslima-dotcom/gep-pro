@@ -17,34 +17,10 @@ function cadInicializar() {
   cadIrAba('secretarias');
 }
 
-GepNav.registrarCallback('fornecedores',  () => cadInicializar());
-GepNav.registrarCallback('secretarias',   () => cadInicializar());
-GepNav.registrarCallback('catalogo',      () => cadInicializar());
-
-function cadIrAba(aba) {
-  cadAbaAtual = aba;
-
-  // Atualizar abas
-  document.querySelectorAll('.cad-aba').forEach(el => {
-    el.classList.toggle('ativa', el.dataset.aba === aba);
-  });
-
-  // Esconder todos os painéis
-  document.querySelectorAll('.cad-painel').forEach(el => el.style.display = 'none');
-
-  // Mostrar painel correto
-  const painel = document.getElementById('cad-' + aba);
-  if (painel) painel.style.display = 'block';
-
-  // Carregar dados
-  const fns = {
-    secretarias:  cadCarregarSecretarias,
-    fornecedores: cadCarregarFornecedores,
-    catalogo:     cadCarregarCatalogo,
-    empresas:     cadCarregarEmpresas
-  };
-  if (fns[aba]) fns[aba]();
-}
+GepNav.registrarCallback('secretarias',  cadCarregarSecretarias);
+GepNav.registrarCallback('fornecedores', cadCarregarFornecedores);
+GepNav.registrarCallback('catalogo',     cadCarregarCatalogo);
+GepNav.registrarCallback('empresas',     cadCarregarEmpresas);
 
 /* ══════════════════════════════════════
    SECRETARIAS
