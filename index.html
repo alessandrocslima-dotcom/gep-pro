@@ -452,9 +452,12 @@
 
         <!-- LISTA DE ORÇAMENTOS -->
         <div id="orcViewLista">
-          <div class="pg-titulo">
-            <h1>💰 Orçamentos</h1>
-            <p>Planilhas orçamentárias dos eventos</p>
+          <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+            <div>
+              <h1>💰 Orçamentos</h1>
+              <p>Planilhas orçamentárias dos eventos</p>
+            </div>
+            <button class="btn btn-primario" onclick="orcNovoAvulso()">+ Novo Orçamento Avulso</button>
           </div>
           <div id="orcLista"></div>
         </div>
