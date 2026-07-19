@@ -491,16 +491,20 @@ function orcIrAba(aba) {
 
   // Atualizar abas visuais
   document.querySelectorAll('.orc-aba-excel').forEach(el => el.classList.remove('ativa'));
-  const btnAba = document.getElementById('orcAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+  const abaMap = { inicial: 'orcAbaInicial', fechamento: 'orcAbaFechamento', fornecedores: 'orcAbaFornecedores' };
+  const btnAba = document.getElementById(abaMap[aba]);
   if (btnAba) btnAba.classList.add('ativa');
 
   // Mostrar/esconder conteúdo
-  const inicial    = document.getElementById('orcConteudoInicial');
-  const fechamento = document.getElementById('orcConteudoFechamento');
-  if (inicial)    inicial.style.display    = aba === 'inicial'    ? 'block' : 'none';
-  if (fechamento) fechamento.style.display = aba === 'fechamento' ? 'block' : 'none';
+  const inicial      = document.getElementById('orcConteudoInicial');
+  const fechamento   = document.getElementById('orcConteudoFechamento');
+  const fornecedores = document.getElementById('orcConteudoFornecedores');
+  if (inicial)      inicial.style.display      = aba === 'inicial'      ? 'block' : 'none';
+  if (fechamento)   fechamento.style.display   = aba === 'fechamento'   ? 'block' : 'none';
+  if (fornecedores) fornecedores.style.display = aba === 'fornecedores' ? 'block' : 'none';
 
-  if (aba === 'fechamento') fchCarregar();
+  if (aba === 'fechamento')   fchCarregar();
+  if (aba === 'fornecedores') ffCarregar();
 }
 
 function fchCarregar() {
@@ -599,6 +603,84 @@ function fchAtualizarSubtotal() {
   const sub = fchLinhas.reduce((acc, l) => acc + (l.valorFinal||0), 0);
   const el  = document.getElementById('fchSubtotal');
   if (el) el.textContent = 'R$ ' + orcFormatarValor(sub);
+}
+
+/* ══════════════════════════════════════
+   ABA FECHAMENTO FORNECEDORES
+══════════════════════════════════════ */
+
+async function ffCarregar() {
+  // 1. Replicar cabeçalho
+  function fmtDt(iso) {
+    if (!iso) return '—';
+    return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR');
+  }
+  const cab = {
+    'ffCliente':    document.getElementById('orcCliente')?.value || '—',
+    'ffNumEvento':  document.getElementById('orcNumEvento')?.value || '—',
+    'ffNomeEvento': document.getElementById('orcNomeEvento')?.value || '—',
+    'ffDataInicio': fmtDt(document.getElementById('orcDataInicio')?.value),
+    'ffDataFim':    fmtDt(document.getElementById('orcDataFim')?.value),
+    'ffHorario':    (document.getElementById('orcHoraInicio')?.value || '') + (document.getElementById('orcHoraFim')?.value ? ' às ' + document.getElementById('orcHoraFim').value : ''),
+    'ffLocal':      document.getElementById('orcLocal')?.value || '—',
+    'ffProdutor':   document.getElementById('orcProdutorNome')?.textContent || '—',
+    'ffProdutorFechamento': document.getElementById('orcProdutorNome')?.textContent || '—'
+  };
+  Object.entries(cab).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || '—';
+  });
+
+  // 2. Agrupar fornecedores do Fechamento
+  const grupos = {};
+  fchLinhas.forEach(l => {
+    const key = (l.fornecedor || '').trim();
+    if (!key) return;
+    if (!grupos[key]) grupos[key] = { nome: key, total: 0, formaPgto: l.formaPgto || '' };
+    grupos[key].total += l.valorFinal || 0;
+  });
+
+  // 3. Buscar dados dos fornecedores no cadastro
+  let fornsCad = [];
+  try { fornsCad = await GepFirebase.listar('fornecedores'); } catch(e) {}
+
+  const dataEvento = document.getElementById('orcDataInicio')?.value || '';
+
+  // 4. Calcular data de pagamento
+  function calcDataPgto(dataISO, prazo) {
+    if (!dataISO || !prazo) return '—';
+    const dias = parseInt(prazo.replace(/\D/g, '')) || 0;
+    if (!dias) return '—';
+    const d = new Date(dataISO + 'T00:00:00');
+    d.setDate(d.getDate() + dias);
+    return d.toLocaleDateString('pt-BR');
+  }
+
+  // 5. Renderizar tabela
+  const tbody = document.getElementById('ffTbody');
+  if (!tbody) return;
+
+  const linhas = Object.values(grupos);
+  let totalGeral = 0;
+
+  tbody.innerHTML = linhas.map((g, i) => {
+    const cad = fornsCad.find(f => f.nome?.toLowerCase() === g.nome.toLowerCase()) || {};
+    const dataPgto = calcDataPgto(dataEvento, cad.prazoPg || g.formaPgto || '');
+    totalGeral += g.total;
+    return `<tr>
+      <td style="padding:.5rem .75rem;font-size:.85rem;font-weight:600;color:#0F172A">${g.nome}</td>
+      <td style="padding:.5rem .75rem;font-size:.82rem;color:#64748B">${cad.doc || '—'}</td>
+      <td style="padding:.5rem .75rem;font-size:.82rem;color:#64748B">${cad.responsavel || '—'}</td>
+      <td style="padding:.5rem .75rem;font-size:.82rem;color:#64748B">${cad.telefone || '—'}</td>
+      <td style="padding:.5rem .75rem;font-size:.85rem;font-weight:700;color:#0F172A">R$ ${orcFormatarValor(g.total)}</td>
+      <td style="padding:.5rem .75rem;font-size:.82rem;color:#2563EB;font-weight:600">${dataPgto}</td>
+      <td><input class="orc-cell" placeholder="Observações" style="width:100%"></td>
+    </tr>`;
+  }).join('');
+
+  // Total
+  const totalEl = document.getElementById('ffTotal');
+  if (totalEl) totalEl.textContent = 'R$ ' + orcFormatarValor(totalGeral);
 }
 
 /* ══════════════════════════════════════
