@@ -223,7 +223,8 @@ async function orcAbrirPlanilha(id) {
     if (!orc) { toast('Orçamento não encontrado.', 'erro'); return; }
 
     orcId    = id;
-    orcLinhas = orc.linhas || [];
+    orcLinhas   = orc.linhas || [];
+    fchLinhas   = orc.linhasFechamento || [];
 
     // Preencher cabeçalho
     const campos = {
@@ -256,6 +257,10 @@ async function orcAbrirPlanilha(id) {
     const prodNome = orc.produtorNome || (GepAuth.usuario && (GepAuth.usuario.nome || GepAuth.usuario.email)) || '—';
     if (prodEl) prodEl.textContent = prodNome;
 
+    // Resetar para aba inicial
+    orcAbaAtual = 'inicial';
+    fchLinhas   = [];
+    orcIrAba('inicial');
     // Renderizar tabela
     orcRenderizarTabela();
 
@@ -376,6 +381,7 @@ async function orcSalvar() {
       fator:        parseFloat(document.getElementById('orcFator')?.value) || 1.8,
       status:       document.getElementById('orcStatus')?.value || 'elaboracao',
       linhas:       orcLinhas,
+      linhasFechamento: fchLinhas,
       atualizadoEm: new Date().toISOString()
     };
 
@@ -386,6 +392,120 @@ async function orcSalvar() {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '💾 Salvar'; }
   }
+}
+
+/* ══════════════════════════════════════
+   ABAS ESTILO EXCEL
+══════════════════════════════════════ */
+
+let orcAbaAtual = 'inicial';
+let fchLinhas   = [];
+
+function orcIrAba(aba) {
+  orcAbaAtual = aba;
+
+  // Atualizar abas visuais
+  document.querySelectorAll('.orc-aba-excel').forEach(el => el.classList.remove('ativa'));
+  const btnAba = document.getElementById('orcAba' + aba.charAt(0).toUpperCase() + aba.slice(1));
+  if (btnAba) btnAba.classList.add('ativa');
+
+  // Mostrar/esconder conteúdo
+  const inicial    = document.getElementById('orcConteudoInicial');
+  const fechamento = document.getElementById('orcConteudoFechamento');
+  if (inicial)    inicial.style.display    = aba === 'inicial'    ? 'block' : 'none';
+  if (fechamento) fechamento.style.display = aba === 'fechamento' ? 'block' : 'none';
+
+  if (aba === 'fechamento') fchCarregar();
+}
+
+function fchCarregar() {
+  // Replicar cabeçalho da Inicial (só leitura)
+  const campos = {
+    'fchNumEvento':  document.getElementById('orcNumEvento')?.value || '—',
+    'fchCliente':    document.getElementById('orcCliente')?.value || '—',
+    'fchNomeEvento': document.getElementById('orcNomeEvento')?.value || '—',
+    'fchDataInicio': document.getElementById('orcDataInicio')?.value || '—',
+    'fchDataFim':    document.getElementById('orcDataFim')?.value || '—',
+    'fchHoraInicio': document.getElementById('orcHoraInicio')?.value || '—',
+    'fchHoraFim':    document.getElementById('orcHoraFim')?.value || '—',
+    'fchPublico':    document.getElementById('orcPublico')?.value || '—',
+    'fchLocal':      document.getElementById('orcLocal')?.value || '—',
+    'fchDataMont':   document.getElementById('orcDataMont')?.value || '—',
+    'fchHoraMont':   document.getElementById('orcHoraMont')?.value || '—'
+  };
+  Object.entries(campos).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || '—';
+  });
+
+  // Produtor e Empresa
+  const prodEl = document.getElementById('fchProdutorNome');
+  if (prodEl) prodEl.textContent = document.getElementById('orcProdutorNome')?.textContent || '—';
+  const empEl = document.getElementById('fchEmpresaNome');
+  if (empEl) empEl.textContent = (GepAuth.usuario?.empresaNome || GepAuth.usuario?.empresa || '—');
+
+  // Sincronizar linhas da Inicial se fechamento ainda não foi editado
+  if (!fchLinhas.length) {
+    fchLinhas = JSON.parse(JSON.stringify(orcLinhas)); // cópia profunda
+  }
+  fchRenderizarTabela();
+}
+
+function fchRenderizarTabela() {
+  const tbody = document.getElementById('fchTbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = fchLinhas.map((l, i) => `
+    <tr>
+      <td><input class="orc-cell" value="${l.servico||''}" onchange="fchUpdateLinha(${i},'servico',this.value)" placeholder="Serviço"></td>
+      <td><input class="orc-cell" value="${l.descricao||''}" onchange="fchUpdateLinha(${i},'descricao',this.value)" placeholder="Descrição"></td>
+      <td><input class="orc-cell orc-num" type="number" value="${l.qtde||1}" min="1" onchange="fchUpdateLinha(${i},'qtde',+this.value);fchRecalcularLinha(${i})"></td>
+      <td><input class="orc-cell orc-money" type="number" value="${l.precoUnit||0}" min="0" step="0.01" onchange="fchUpdateLinha(${i},'precoUnit',+this.value);fchRecalcularLinha(${i})"></td>
+      <td><input class="orc-cell orc-num" type="number" value="${l.freq||1}" min="1" onchange="fchUpdateLinha(${i},'freq',+this.value);fchRecalcularLinha(${i})"></td>
+      <td>
+        <select class="orc-cell orc-sel" onchange="fchUpdateLinha(${i},'periodo',this.value);fchRecalcularLinha(${i})">
+          <option value="Unid" ${l.periodo==='Unid'?'selected':''}>Unid</option>
+          <option value="Dia"  ${l.periodo==='Dia'?'selected':''}>Dia</option>
+        </select>
+      </td>
+      <td class="orc-total-cell" id="fchTotal${i}">R$ ${orcFormatarValor(l.valorFinal||0)}</td>
+      <td><input class="orc-cell" value="${l.fornecedor||''}" onchange="fchUpdateLinha(${i},'fornecedor',this.value)" placeholder="Fornecedor"></td>
+      <td><input class="orc-cell orc-pgto" value="${l.formaPgto||''}" onchange="fchUpdateLinha(${i},'formaPgto',this.value)" placeholder="30D"></td>
+      <td><input class="orc-cell" value="${l.obs||''}" onchange="fchUpdateLinha(${i},'obs',this.value)" placeholder="—"></td>
+      <td><button class="orc-del-btn" onclick="fchRemoverLinha(${i})">✕</button></td>
+    </tr>`).join('');
+
+  fchAtualizarSubtotal();
+}
+
+function fchUpdateLinha(idx, campo, valor) {
+  if (fchLinhas[idx]) fchLinhas[idx][campo] = valor;
+}
+
+function fchRecalcularLinha(idx) {
+  const l = fchLinhas[idx];
+  if (!l) return;
+  l.valorFinal = (l.qtde||0) * (l.precoUnit||0) * (l.freq||1);
+  const el = document.getElementById('fchTotal' + idx);
+  if (el) el.textContent = 'R$ ' + orcFormatarValor(l.valorFinal);
+  fchAtualizarSubtotal();
+}
+
+function fchAdicionarLinha() {
+  fchLinhas.push({ servico:'', descricao:'', qtde:1, precoUnit:0, freq:1, periodo:'Unid', valorFinal:0, fornecedor:'', formaPgto:'', obs:'' });
+  fchRenderizarTabela();
+}
+
+function fchRemoverLinha(idx) {
+  if (!GepUtils.confirmar('Remover este serviço?')) return;
+  fchLinhas.splice(idx, 1);
+  fchRenderizarTabela();
+}
+
+function fchAtualizarSubtotal() {
+  const sub = fchLinhas.reduce((acc, l) => acc + (l.valorFinal||0), 0);
+  const el  = document.getElementById('fchSubtotal');
+  if (el) el.textContent = 'R$ ' + orcFormatarValor(sub);
 }
 
 /* ══════════════════════════════════════
@@ -405,6 +525,11 @@ window.GepOrcamentos     = { inicializar: orcInicializar };
 window.orcAbrirDaVT      = orcAbrirDaVT;
 window.orcAbrirPlanilha  = orcAbrirPlanilha;
 window.orcVoltarLista    = orcVoltarLista;
+window.orcIrAba          = orcIrAba;
+window.fchAdicionarLinha = fchAdicionarLinha;
+window.fchRemoverLinha   = fchRemoverLinha;
+window.fchUpdateLinha    = fchUpdateLinha;
+window.fchRecalcularLinha = fchRecalcularLinha;
 window.orcAdicionarLinha = orcAdicionarLinha;
 window.orcRemoverLinha   = orcRemoverLinha;
 window.orcUpdateLinha    = orcUpdateLinha;
