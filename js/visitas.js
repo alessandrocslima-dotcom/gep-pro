@@ -258,7 +258,61 @@ function vtAcaoEditar(id) {
 }
 
 function vtAcaoWA(id) {
-  toast('WhatsApp em breve...', 'ok');
+  // Buscar dados da VT no Firebase
+  GepFirebase.buscar('visitas', id).then(vt => {
+    if (!vt) { toast('Visita não encontrada.', 'erro'); return; }
+
+    function fmtData(iso) {
+      if (!iso) return '—';
+      return new Date(iso + 'T00:00:00').toLocaleDateString('pt-BR');
+    }
+
+    let msg = '';
+    msg += '🗺 VISITA TÉCNICA | ' + (vt.empresaNome || vt.empresaId || '—') + '\n';
+    msg += '👤 Produtor: ' + (vt.produtorNome || '—') + '\n\n';
+
+    msg += '📋 EVENTO\n';
+    msg += '- Nome: ' + (vt.nomeEvento || '—') + '\n';
+    msg += '- Endereço: ' + (vt.endereco || '—') + '\n';
+
+    if (vt.gps) {
+      msg += '- 📍 https://maps.google.com/?q=' + vt.gps.lat + ',' + vt.gps.lng + '\n';
+      msg += '- 🗺 https://waze.com/ul?ll=' + vt.gps.lat + ',' + vt.gps.lng + '&navigate=yes\n';
+    } else if (vt.endereco) {
+      msg += '- 📍 https://maps.google.com/?q=' + encodeURIComponent(vt.endereco) + '\n';
+    }
+
+    if (vt.dataInicio) msg += '- Data: ' + fmtData(vt.dataInicio) + (vt.horaInicio ? ' às ' + vt.horaInicio : '') + '\n';
+    if (vt.dataFim)   msg += '- Término: ' + fmtData(vt.dataFim) + (vt.horaFim ? ' às ' + vt.horaFim : '') + '\n';
+    if (vt.publico)   msg += '- Público: ' + vt.publico + '\n';
+
+    if (vt.areaRisco) {
+      msg += '\n⚠️ ÁREA DE RISCO\n';
+      if (vt.pontoEncontro) msg += '- Ponto de encontro: ' + vt.pontoEncontro + '\n';
+      if (vt.contatoLocal)  msg += '- Contato: ' + vt.contatoLocal + '\n';
+    }
+
+    if (vt.dataMontagem || vt.horaMontagem) {
+      msg += '\n🔧 MONTAGEM\n';
+      let mont = '';
+      if (vt.dataMontagem) mont += fmtData(vt.dataMontagem);
+      if (vt.horaMontagem) mont += (mont ? ' às ' : '') + vt.horaMontagem;
+      msg += '- ' + mont + '\n';
+    }
+
+    if (vt.demandas && vt.demandas.length) {
+      msg += '\n📦 DEMANDAS\n';
+      vt.demandas.forEach(d => {
+        msg += '- ' + d.servico + (d.descricao ? ' (' + d.descricao + ')' : '') + ' — Qtd: ' + d.qtde + '\n';
+      });
+    }
+
+    if (vt.observacoes) {
+      msg += '\n📝 OBSERVAÇÕES\n' + vt.observacoes + '\n';
+    }
+
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }).catch(() => toast('Erro ao carregar visita.', 'erro'));
 }
 
 function vtAcaoExcluir(id) {
