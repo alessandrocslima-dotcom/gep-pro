@@ -146,7 +146,7 @@ async function orcAbrirDaVT(vtId) {
       await GepFirebase.salvar('orcamentos', novoId, dados);
 
       // Marcar VT como enviada
-      await GepFirebase.salvar('visitas', vtId, { orcEnviado: true, orcId: novoId });
+      await GepFirebase.atualizar('visitas', vtId, { orcEnviado: true, orcId: novoId });
 
       await orcAbrirPlanilha(novoId);
     }
