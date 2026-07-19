@@ -668,3 +668,52 @@ a { color: var(--cor-acento); text-decoration: none; }
   margin-bottom: .2rem;
   line-height: 1.5;
 }
+
+/* ══════════════════════════════════════
+   CADASTROS
+══════════════════════════════════════ */
+
+.cad-abas {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.cad-aba {
+  padding: .5rem 1rem;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--cor-texto-leve);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.cad-aba:hover { border-color: var(--cor-acento); color: var(--cor-acento); }
+.cad-aba.ativa { background: var(--cor-acento); color: #fff; border-color: var(--cor-acento); }
+
+.cad-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .875rem 1rem;
+  background: #fff;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  margin-bottom: .5rem;
+  box-shadow: var(--sombra);
+}
+.cad-item-info { flex: 1; min-width: 0; }
+.cad-item-nome { font-size: .9rem; font-weight: 600; color: var(--cor-texto); }
+.cad-item-detalhe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  margin-top: .25rem;
+  font-size: .78rem;
+  color: var(--cor-texto-leve);
+  align-items: center;
+}
+.cad-item-acoes { display: flex; gap: .4rem; flex-shrink: 0; }
