@@ -476,6 +476,7 @@ function vtAvancarEtapa2() {
 
 let vtDemandas = [];
 let vtCatalogo = [];
+let vtEditandoDemanda = null; // índice da demanda sendo editada
 
 async function vtPreencherEtapa3() {
   // Carregar catálogo
@@ -499,13 +500,14 @@ function vtRenderizarDemandas() {
   }
 
   lista.innerHTML = vtDemandas.map((d, i) => `
-    <div style="display:grid;grid-template-columns:2fr 2fr 80px 80px 90px 36px;gap:.5rem;align-items:center;padding:.5rem;background:#F8FAFC;border-radius:8px;margin-bottom:.4rem">
+    <div style="display:grid;grid-template-columns:2fr 2fr 60px 60px 80px 36px 36px;gap:.4rem;align-items:center;padding:.6rem .5rem;background:#F8FAFC;border-radius:8px;margin-bottom:.4rem">
       <div style="font-size:.85rem;font-weight:600;color:#0F172A">${d.servico || '—'}</div>
       <div style="font-size:.8rem;color:#64748B">${d.descricao || '—'}</div>
       <div style="font-size:.8rem;text-align:center;color:#0F172A">${d.qtde || 1}</div>
       <div style="font-size:.8rem;text-align:center;color:#0F172A">${d.freq || 1}</div>
       <div style="font-size:.8rem;text-align:center"><span style="background:#DBEAFE;color:#1D4ED8;padding:.15rem .5rem;border-radius:99px;font-size:.75rem;font-weight:600">${d.periodo || 'Unid'}</span></div>
-      <button onclick="vtRemoverDemanda(${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:1rem">✕</button>
+      <button onclick="vtEditarDemanda(${i})" style="background:none;border:none;color:#2563EB;cursor:pointer;font-size:1rem;padding:0" title="Editar">✏️</button>
+      <button onclick="vtRemoverDemanda(${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:1rem;padding:0" title="Remover">✕</button>
     </div>`).join('');
 }
 
@@ -530,6 +532,25 @@ function vtSelecionarServico(nome) {
   document.getElementById('vtSugestoes').style.display = 'none';
 }
 
+function vtEditarDemanda(idx) {
+  const d = vtDemandas[idx];
+  if (!d) return;
+  vtEditandoDemanda = idx;
+
+  document.getElementById('vtBuscaServico').value  = d.servico || '';
+  document.getElementById('vtDescServico').value   = d.descricao || '';
+  document.getElementById('vtQtdeServico').value   = d.qtde || 1;
+  document.getElementById('vtFreqServico').value   = d.freq || 1;
+  document.getElementById('vtPeriodoServico').value = d.periodo || 'Unid';
+
+  // Mudar botão para "Salvar alteração"
+  const btn = document.getElementById('vtBtnAdicionarDemanda');
+  if (btn) { btn.textContent = '✅ Salvar'; btn.style.background = '#16A34A'; }
+
+  document.getElementById('vtBuscaServico').focus();
+  document.getElementById('vtBuscaServico').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 function vtAdicionarDemanda() {
   const servico  = document.getElementById('vtBuscaServico').value.trim();
   const descricao = document.getElementById('vtDescServico').value.trim();
@@ -539,7 +560,15 @@ function vtAdicionarDemanda() {
 
   if (!servico) { toast('Digite ou selecione o serviço.', 'erro'); document.getElementById('vtBuscaServico').focus(); return; }
 
-  vtDemandas.push({ servico, descricao, qtde, freq, periodo });
+  if (vtEditandoDemanda !== null) {
+    vtDemandas[vtEditandoDemanda] = { servico, descricao, qtde, freq, periodo };
+    vtEditandoDemanda = null;
+    const btn = document.getElementById('vtBtnAdicionarDemanda');
+    if (btn) { btn.textContent = '+ Adicionar'; btn.style.background = ''; }
+    toast('Demanda atualizada!', 'ok');
+  } else {
+    vtDemandas.push({ servico, descricao, qtde, freq, periodo });
+  }
   vtRenderizarDemandas();
 
   // Limpar campos
@@ -586,6 +615,7 @@ window.vtBuscarCatalogo   = vtBuscarCatalogo;
 window.vtSelecionarServico = vtSelecionarServico;
 window.vtAdicionarDemanda = vtAdicionarDemanda;
 window.vtRemoverDemanda   = vtRemoverDemanda;
+window.vtEditarDemanda    = vtEditarDemanda;
 window.vtAvancarEtapa3    = vtAvancarEtapa3;
 window.vtToggleRisco      = vtToggleRisco;
 window.vtAdicionarContato = vtAdicionarContato;
