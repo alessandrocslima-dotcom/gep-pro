@@ -729,21 +729,19 @@ a { color: var(--cor-acento); text-decoration: none; }
   border-radius: var(--raio);
   padding: 1rem 1.25rem;
   margin-bottom: .75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  cursor: pointer;
   box-shadow: var(--sombra);
-  transition: box-shadow .15s, transform .1s;
+  transition: box-shadow .15s;
 }
-.orc-card:hover { box-shadow: var(--sombra-md); transform: translateY(-1px); }
-.orc-card-left { flex: 1; min-width: 0; }
-.orc-card-nome { font-size: .95rem; font-weight: 600; color: var(--cor-texto); margin-bottom: .3rem; }
-.orc-card-info { display: flex; flex-wrap: wrap; gap: .5rem; font-size: .78rem; color: var(--cor-texto-leve); align-items: center; }
-.orc-card-right { text-align: right; flex-shrink: 0; }
+.orc-card:hover { box-shadow: var(--sombra-md); }
+.orc-card-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+.orc-card-esquerda { flex: 1; min-width: 0; }
+.orc-card-num { font-size: .75rem; font-weight: 700; color: var(--cor-acento); margin-bottom: .2rem; letter-spacing: .03em; }
+.orc-card-nome { font-size: 1rem; font-weight: 700; color: var(--cor-texto); margin-bottom: .35rem; }
+.orc-card-info { display: flex; flex-wrap: wrap; gap: .4rem; font-size: .78rem; color: var(--cor-texto-leve); align-items: center; }
+.orc-card-direita { text-align: right; flex-shrink: 0; }
 .orc-card-total { font-size: 1.1rem; font-weight: 700; color: var(--cor-texto); margin-bottom: .3rem; }
-.orc-card-status { font-size: .72rem; font-weight: 700; padding: .2rem .6rem; border-radius: 99px; }
+.orc-card-status { font-size: .72rem; font-weight: 700; padding: .2rem .6rem; border-radius: 99px; display: inline-block; }
+.orc-card-acoes { display: flex; flex-wrap: wrap; gap: .5rem; padding-top: .75rem; border-top: 1px solid var(--cor-borda); }
 
 /* ══════════════════════════════════════
    ORÇAMENTOS — PLANILHA
