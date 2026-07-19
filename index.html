@@ -110,17 +110,21 @@
 
       <!-- Cadastros -->
       <div class="sb-grupo">Cadastros</div>
-      <div class="sb-item" data-pagina="fornecedores" onclick="GepNav.ir('fornecedores')">
-        <span class="sb-item-ico">🤝</span>
-        <span>Fornecedores</span>
-      </div>
       <div class="sb-item" data-pagina="secretarias" onclick="GepNav.ir('secretarias')">
         <span class="sb-item-ico">🏛</span>
         <span>Secretarias</span>
       </div>
+      <div class="sb-item" data-pagina="fornecedores" onclick="GepNav.ir('fornecedores')">
+        <span class="sb-item-ico">🤝</span>
+        <span>Fornecedores</span>
+      </div>
       <div class="sb-item" data-pagina="catalogo" onclick="GepNav.ir('catalogo')">
         <span class="sb-item-ico">📦</span>
         <span>Catálogo</span>
+      </div>
+      <div class="sb-item" data-pagina="empresas" onclick="GepNav.ir('empresas')">
+        <span class="sb-item-ico">🏢</span>
+        <span>Empresas</span>
       </div>
 
       <!-- Gestão (coordenador+) -->
@@ -479,59 +483,40 @@
         </div>
       </div>
 
+      <!-- Secretarias -->
+      <div class="view" id="vwSecretarias">
+        <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <div><h1>🏛 Secretarias</h1><p>Cadastro de secretarias municipais</p></div>
+          <button class="btn btn-primario" onclick="cadNovaSecretaria()">+ Nova Secretaria</button>
+        </div>
+        <div id="cadSecLista"></div>
+      </div>
+
       <!-- Fornecedores -->
       <div class="view" id="vwFornecedores">
         <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
-          <div><h1>📋 Cadastros</h1><p>Gerencie secretarias, fornecedores, catálogo e empresas</p></div>
+          <div><h1>🤝 Fornecedores</h1><p>Cadastro de fornecedores de serviços</p></div>
+          <button class="btn btn-primario" onclick="cadNovoFornecedor()">+ Novo Fornecedor</button>
         </div>
-        <div class="cad-abas">
-          <button class="cad-aba ativa" data-aba="secretarias" onclick="cadIrAba('secretarias')">🏛 Secretarias</button>
-          <button class="cad-aba" data-aba="fornecedores" onclick="cadIrAba('fornecedores')">🤝 Fornecedores</button>
-          <button class="cad-aba" data-aba="catalogo" onclick="cadIrAba('catalogo')">📦 Catálogo</button>
-          <button class="cad-aba" data-aba="empresas" onclick="cadIrAba('empresas')">🏢 Empresas</button>
-        </div>
-
-        <!-- SECRETARIAS -->
-        <div id="cad-secretarias" class="cad-painel">
-          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-            <button class="btn btn-primario" onclick="cadNovaSecretaria()">+ Nova Secretaria</button>
-          </div>
-          <div id="cadSecLista"></div>
-        </div>
-
-        <!-- FORNECEDORES -->
-        <div id="cad-fornecedores" class="cad-painel" style="display:none">
-          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-            <button class="btn btn-primario" onclick="cadNovoFornecedor()">+ Novo Fornecedor</button>
-          </div>
-          <div id="cadFornLista"></div>
-        </div>
-
-        <!-- CATÁLOGO -->
-        <div id="cad-catalogo" class="cad-painel" style="display:none">
-          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-            <button class="btn btn-primario" onclick="cadNovoCatalogo()">+ Novo Item</button>
-          </div>
-          <div id="cadCatLista"></div>
-        </div>
-
-        <!-- EMPRESAS -->
-        <div id="cad-empresas" class="cad-painel" style="display:none">
-          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
-            <button class="btn btn-primario" onclick="cadNovaEmpresa()">+ Nova Empresa</button>
-          </div>
-          <div id="cadEmpLista"></div>
-        </div>
+        <div id="cadFornLista"></div>
       </div>
 
-      <!-- Secretarias (redireciona para Fornecedores/Cadastros) -->
-      <div class="view" id="vwSecretarias">
-        <div class="pg-titulo"><h1>🏛 Secretarias</h1></div>
-      </div>
-
-      <!-- Catálogo (redireciona para Fornecedores/Cadastros) -->
+      <!-- Catálogo -->
       <div class="view" id="vwCatalogo">
-        <div class="pg-titulo"><h1>📦 Catálogo</h1></div>
+        <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <div><h1>📦 Catálogo</h1><p>Catálogo de serviços e equipamentos</p></div>
+          <button class="btn btn-primario" onclick="cadNovoCatalogo()">+ Novo Item</button>
+        </div>
+        <div id="cadCatLista"></div>
+      </div>
+
+      <!-- Empresas -->
+      <div class="view" id="vwEmpresas">
+        <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <div><h1>🏢 Empresas</h1><p>Cadastro de empresas</p></div>
+          <button class="btn btn-primario" onclick="cadNovaEmpresa()">+ Nova Empresa</button>
+        </div>
+        <div id="cadEmpLista"></div>
       </div>
 
       <!-- Relatórios -->
