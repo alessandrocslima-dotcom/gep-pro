@@ -659,11 +659,14 @@ function vtPreencherEtapa5() {
     html += '</div>';
   }
 
-  // Montagem
-  if (d.dataMontagem) {
+  // Montagem — aparece se tiver data OU horário
+  if (d.dataMontagem || d.horaMontagem) {
+    let montStr = '';
+    if (d.dataMontagem) montStr += fmtData(d.dataMontagem);
+    if (d.horaMontagem) montStr += (montStr ? ' às ' : '') + d.horaMontagem;
     html += `<div class="vt-resumo-bloco">
       <div class="vt-resumo-titulo">🔧 MONTAGEM</div>
-      <div class="vt-resumo-linha">- Data: ${fmtData(d.dataMontagem)}${d.horaMontagem ? ' às ' + d.horaMontagem : ''}</div>
+      <div class="vt-resumo-linha">- ${montStr || '—'}</div>
     </div>`;
   }
 
