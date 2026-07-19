@@ -66,11 +66,15 @@ async function orcRenderizarLista() {
       const total = orcCalcularTotal(o.linhas || []);
       const data  = o.dataInicio ? new Date(o.dataInicio+'T00:00:00').toLocaleDateString('pt-BR') : '—';
       const hora  = (o.horaInicio || '') + (o.horaFim ? ' às ' + o.horaFim : '');
+      const bordaCor = o.avulso ? '#F59E0B' : 'var(--cor-acento)';
       return `
-        <div class="orc-card">
+        <div class="orc-card" style="border-left-color:${bordaCor}">
           <div class="orc-card-topo">
             <div class="orc-card-esquerda">
-              ${o.numEvento ? `<div class="orc-card-num">Nº ${o.numEvento}</div>` : ''}
+              <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.2rem">
+                ${o.numEvento ? `<div class="orc-card-num">Nº ${o.numEvento}</div>` : ''}
+                ${o.avulso ? `<span style="background:#FEF3C7;color:#92400E;font-size:.7rem;font-weight:700;padding:.15rem .5rem;border-radius:99px">🟡 AVULSO</span>` : ''}
+              </div>
               <div class="orc-card-nome">${o.nomeEvento || 'Sem nome'}</div>
               <div class="orc-card-info">
                 ${o.local    ? `<span>📍 ${o.local}</span>` : ''}
@@ -144,6 +148,49 @@ async function orcExcluir(id) {
     orcRenderizarLista();
   } catch(e) {
     toast('Erro ao excluir.', 'erro');
+  }
+}
+
+/* ══════════════════════════════════════
+   ORÇAMENTO AVULSO
+══════════════════════════════════════ */
+
+async function orcNovoAvulso() {
+  try {
+    const usuario = GepAuth.usuario;
+    const novoId  = GepUtils.gerarId('orc');
+
+    const dados = {
+      vtId:         null,
+      avulso:       true,
+      nomeEvento:   '',
+      clienteNome:  '',
+      dataInicio:   '',
+      dataFim:      '',
+      horaInicio:   '',
+      horaFim:      '',
+      local:        '',
+      publico:      '',
+      dataMontagem: '',
+      horaMontagem: '',
+      linhas:       [],
+      linhasFechamento: [],
+      verbaProd:    0,
+      fator:        1.8,
+      status:       'elaboracao',
+      numEvento:    '',
+      empresaId:    usuario.empresa || '',
+      empresaNome:  usuario.empresaNome || '',
+      produtorId:   usuario.id,
+      produtorNome: usuario.nome || usuario.email,
+      criadoEm:     new Date().toISOString()
+    };
+
+    await GepFirebase.salvar('orcamentos', novoId, dados);
+    await orcAbrirPlanilha(novoId);
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao criar orçamento avulso.', 'erro');
   }
 }
 
@@ -537,4 +584,5 @@ window.orcRecalcularLinha = orcRecalcularLinha;
 window.orcAtualizarTotais = orcAtualizarTotais;
 window.orcSalvar         = orcSalvar;
 window.orcWACotacao       = orcWACotacao;
+window.orcNovoAvulso      = orcNovoAvulso;
 window.orcExcluir         = orcExcluir;
