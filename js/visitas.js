@@ -70,20 +70,28 @@ async function vtRenderizarLista() {
 }
 
 function vtRenderizarCard(vt) {
-  const data = vt.dataEvento ? GepUtils.formatarData(vt.dataEvento) : '—';
-  const hora = vt.horaEvento || '—';
+  const dataISO = vt.dataInicio || vt.dataEvento || null;
+  const hora    = vt.horaInicio || vt.horaEvento || null;
   const empresa = vt.empresaNome || vt.empresaId || '—';
+  const MESES   = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+  let dia = '—', mes = '—';
+  if (dataISO) {
+    const dt = new Date(dataISO + 'T00:00:00');
+    dia = dt.getDate();
+    mes = MESES[dt.getMonth()];
+  }
 
   return `
     <div class="vt-card" data-id="${vt.id}">
       <div class="vt-card-data">
-        <span class="vt-card-dia">${vt.dataEvento ? new Date(vt.dataEvento + 'T00:00:00').getDate() : '—'}</span>
-        <span class="vt-card-mes">${vt.dataEvento ? ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][new Date(vt.dataEvento + 'T00:00:00').getMonth()] : '—'}</span>
+        <span class="vt-card-dia">${dia}</span>
+        <span class="vt-card-mes">${mes}</span>
       </div>
       <div class="vt-card-info">
         <div class="vt-card-nome">${vt.nomeEvento || 'Sem nome'}</div>
         <div class="vt-card-detalhes">
-          ${hora !== '—' ? `<span>🕐 ${hora}</span>` : ''}
+          ${hora ? `<span>🕐 ${hora}</span>` : ''}
           ${vt.endereco ? `<span>📍 ${vt.endereco}</span>` : ''}
           <span class="${vt.empresaId === 'inter' ? 'badge-inter' : 'badge-vivere'}">${empresa}</span>
           <span>👤 ${vt.produtorNome || '—'}</span>
@@ -91,6 +99,7 @@ function vtRenderizarCard(vt) {
         <div class="vt-card-acoes">
           <button class="btn btn-sucesso btn-sm" onclick="vtAcaoWA('${vt.id}')">💬 WhatsApp</button>
           <button class="btn btn-secundario btn-sm" onclick="vtAcaoEditar('${vt.id}')">✏️ Editar</button>
+          <button class="btn btn-primario btn-sm" onclick="vtAcaoEnviarOrcamento('${vt.id}')">📤 Enviar p/ Orçamento</button>
           <button class="btn btn-perigo btn-sm" onclick="vtAcaoExcluir('${vt.id}')">🗑 Excluir</button>
         </div>
       </div>
@@ -239,6 +248,10 @@ function vtAvancarEtapa1() {
 /* ══════════════════════════════════════
    AÇÕES NOS CARDS
 ══════════════════════════════════════ */
+
+function vtAcaoEnviarOrcamento(id) {
+  toast('Módulo de Orçamentos em breve...', 'ok');
+}
 
 function vtAcaoEditar(id) {
   toast('Editar em breve...', 'ok');
@@ -757,6 +770,7 @@ window.vtCapturarGPS      = vtCapturarGPS;
 window.vtAbrirWaze        = vtAbrirWaze;
 window.vtAbrirMaps        = vtAbrirMaps;
 window.vtIrEtapa          = vtIrEtapa;
-window.vtAcaoEditar       = vtAcaoEditar;
+window.vtAcaoEditar           = vtAcaoEditar;
+window.vtAcaoEnviarOrcamento  = vtAcaoEnviarOrcamento;
 window.vtAcaoWA           = vtAcaoWA;
 window.vtAcaoExcluir      = vtAcaoExcluir;
