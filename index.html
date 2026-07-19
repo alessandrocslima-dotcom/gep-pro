@@ -431,11 +431,13 @@
           </div>
         </div>
         <div class="vt-etapa" id="vtEtapa5">
-          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
-            <p>Etapa 5 — Resumo em construção...</p>
-            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+          <div class="card">
+            <div class="card-hdr"><h3>✅ Resumo da Visita</h3></div>
+            <p style="font-size:.85rem;color:#64748B;margin-bottom:1rem">Revise os dados antes de salvar.</p>
+            <div id="vtResumoConteudo"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:1.5rem">
               <button class="btn btn-secundario" onclick="vtIrEtapa(4)">← Anterior</button>
-              <button class="btn btn-primario">✅ Salvar Visita</button>
+              <button class="btn btn-primario" id="vtBtnSalvar" onclick="vtSalvarVisita()">✅ Salvar Visita</button>
             </div>
           </div>
         </div>
