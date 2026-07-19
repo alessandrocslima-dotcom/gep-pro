@@ -142,6 +142,7 @@ function vtIrEtapa(etapa) {
   if (etapa === 1) vtPreencherEtapa1();
   if (etapa === 2) vtPreencherEtapa2();
   if (etapa === 3) vtPreencherEtapa3();
+  if (etapa === 4) vtPreencherEtapa4();
 }
 
 function vtAtualizarProgresso() {
@@ -590,6 +591,21 @@ function vtAvancarEtapa3() {
   vtIrEtapa(4);
 }
 
+
+/* ══════════════════════════════════════
+   ETAPA 4 — OBSERVAÇÕES
+══════════════════════════════════════ */
+
+function vtPreencherEtapa4() {
+  const campo = document.getElementById('vtObservacoes');
+  if (campo && vtDados.observacoes) campo.value = vtDados.observacoes;
+}
+
+function vtAvancarEtapa4() {
+  vtDados.observacoes = document.getElementById('vtObservacoes').value.trim();
+  vtIrEtapa(5);
+}
+
 /* ── Exportar ── */
 window.GepVisitas = {
   inicializar:      vtInicializar,
@@ -617,6 +633,7 @@ window.vtAdicionarDemanda = vtAdicionarDemanda;
 window.vtRemoverDemanda   = vtRemoverDemanda;
 window.vtEditarDemanda    = vtEditarDemanda;
 window.vtAvancarEtapa3    = vtAvancarEtapa3;
+window.vtAvancarEtapa4    = vtAvancarEtapa4;
 window.vtToggleRisco      = vtToggleRisco;
 window.vtAdicionarContato = vtAdicionarContato;
 window.vtRemoverContato   = vtRemoverContato;
