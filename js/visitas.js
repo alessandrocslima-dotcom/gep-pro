@@ -143,6 +143,7 @@ function vtIrEtapa(etapa) {
   if (etapa === 2) vtPreencherEtapa2();
   if (etapa === 3) vtPreencherEtapa3();
   if (etapa === 4) vtPreencherEtapa4();
+  if (etapa === 5) vtPreencherEtapa5();
 }
 
 function vtAtualizarProgresso() {
@@ -606,6 +607,117 @@ function vtAvancarEtapa4() {
   vtIrEtapa(5);
 }
 
+
+/* ══════════════════════════════════════
+   ETAPA 5 — RESUMO
+══════════════════════════════════════ */
+
+function vtPreencherEtapa5() {
+  const el = document.getElementById('vtResumoConteudo');
+  if (!el) return;
+
+  const d = vtDados;
+
+  // Formatar data
+  function fmtData(iso) {
+    if (!iso) return '—';
+    const dt = new Date(iso + 'T00:00:00');
+    return dt.toLocaleDateString('pt-BR');
+  }
+
+  let html = '';
+
+  // Cabeçalho
+  html += `<div class="vt-resumo-bloco">
+    <div class="vt-resumo-linha"><strong>🗺 VISITA TÉCNICA</strong> | ${d.empresaNome || '—'}</div>
+    <div class="vt-resumo-linha">👤 Produtor: ${d.produtorNome || '—'}</div>
+  </div>`;
+
+  // Evento
+  html += `<div class="vt-resumo-bloco">
+    <div class="vt-resumo-titulo">📋 EVENTO</div>
+    <div class="vt-resumo-linha">- Nome: ${d.nomeEvento || '—'}</div>
+    <div class="vt-resumo-linha">- Endereço: ${d.endereco || '—'}</div>`;
+
+  if (d.gps) {
+    html += `<div class="vt-resumo-linha">- <a href="https://maps.google.com/?q=${d.gps.lat},${d.gps.lng}" target="_blank" style="color:#2563EB">📍 Google Maps</a> | <a href="https://waze.com/ul?ll=${d.gps.lat},${d.gps.lng}&navigate=yes" target="_blank" style="color:#2563EB">🗺 Waze</a></div>`;
+  } else if (d.endereco) {
+    html += `<div class="vt-resumo-linha">- <a href="https://maps.google.com/?q=${encodeURIComponent(d.endereco)}" target="_blank" style="color:#2563EB">📍 Google Maps</a> | <a href="https://waze.com/ul?q=${encodeURIComponent(d.endereco)}&navigate=yes" target="_blank" style="color:#2563EB">🗺 Waze</a></div>`;
+  }
+
+  if (d.dataInicio) html += `<div class="vt-resumo-linha">- Data: ${fmtData(d.dataInicio)}${d.horaInicio ? ' às ' + d.horaInicio : ''}</div>`;
+  if (d.dataFim)   html += `<div class="vt-resumo-linha">- Término: ${fmtData(d.dataFim)}${d.horaFim ? ' às ' + d.horaFim : ''}</div>`;
+  if (d.publico)   html += `<div class="vt-resumo-linha">- Público: ${d.publico}</div>`;
+  html += '</div>';
+
+  // Área de risco
+  if (d.areaRisco) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">⚠️ ÁREA DE RISCO</div>`;
+    if (d.pontoEncontro) html += `<div class="vt-resumo-linha">- Ponto de encontro: ${d.pontoEncontro}</div>`;
+    if (d.contatoLocal)  html += `<div class="vt-resumo-linha">- Contato: ${d.contatoLocal}</div>`;
+    html += '</div>';
+  }
+
+  // Montagem
+  if (d.dataMontagem) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">🔧 MONTAGEM</div>
+      <div class="vt-resumo-linha">- Data: ${fmtData(d.dataMontagem)}${d.horaMontagem ? ' às ' + d.horaMontagem : ''}</div>
+    </div>`;
+  }
+
+  // Demandas
+  if (d.demandas && d.demandas.length) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">📦 DEMANDAS</div>`;
+    d.demandas.forEach(dem => {
+      html += `<div class="vt-resumo-linha">- ${dem.servico}${dem.descricao ? ' ('+dem.descricao+')' : ''} — Qtd: ${dem.qtde}</div>`;
+    });
+    html += '</div>';
+  }
+
+  // Observações
+  if (d.observacoes) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">📝 OBSERVAÇÕES</div>
+      <div class="vt-resumo-linha" style="white-space:pre-wrap">${d.observacoes}</div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+async function vtSalvarVisita() {
+  const btn = document.getElementById('vtBtnSalvar');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Salvando...'; }
+
+  try {
+    const usuario = GepAuth.usuario;
+    const agora = new Date().toISOString();
+
+    const dados = {
+      ...vtDados,
+      produtorId:   usuario.id,
+      produtorNome: usuario.nome || usuario.email,
+      empresaId:    vtDados.empresaId,
+      criadoEm:     vtEditandoId ? vtDados.criadoEm : agora,
+      atualizadoEm: agora
+    };
+
+    const id = vtEditandoId || GepUtils.gerarId('vt');
+    await GepFirebase.salvar('visitas', id, dados);
+
+    toast('Visita técnica salva com sucesso! ✓', 'ok');
+    setTimeout(() => vtFecharFormulario(), 800);
+
+  } catch(e) {
+    console.error('Erro ao salvar:', e);
+    toast('Erro ao salvar. Tente novamente.', 'erro');
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Salvar Visita'; }
+  }
+}
+
 /* ── Exportar ── */
 window.GepVisitas = {
   inicializar:      vtInicializar,
@@ -634,6 +746,7 @@ window.vtRemoverDemanda   = vtRemoverDemanda;
 window.vtEditarDemanda    = vtEditarDemanda;
 window.vtAvancarEtapa3    = vtAvancarEtapa3;
 window.vtAvancarEtapa4    = vtAvancarEtapa4;
+window.vtSalvarVisita     = vtSalvarVisita;
 window.vtToggleRisco      = vtToggleRisco;
 window.vtAdicionarContato = vtAdicionarContato;
 window.vtRemoverContato   = vtRemoverContato;
