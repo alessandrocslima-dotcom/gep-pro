@@ -481,38 +481,57 @@
 
       <!-- Fornecedores -->
       <div class="view" id="vwFornecedores">
-        <div class="pg-titulo">
-          <h1>🤝 Fornecedores</h1>
-          <p>Cadastro de fornecedores de serviços</p>
+        <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <div><h1>📋 Cadastros</h1><p>Gerencie secretarias, fornecedores, catálogo e empresas</p></div>
         </div>
-        <div class="card" style="text-align:center; padding: 3rem; color: #94A3B8;">
-          <div style="font-size:3rem; margin-bottom:1rem">🤝</div>
-          <p>Módulo de Fornecedores em construção...</p>
+        <div class="cad-abas">
+          <button class="cad-aba ativa" data-aba="secretarias" onclick="cadIrAba('secretarias')">🏛 Secretarias</button>
+          <button class="cad-aba" data-aba="fornecedores" onclick="cadIrAba('fornecedores')">🤝 Fornecedores</button>
+          <button class="cad-aba" data-aba="catalogo" onclick="cadIrAba('catalogo')">📦 Catálogo</button>
+          <button class="cad-aba" data-aba="empresas" onclick="cadIrAba('empresas')">🏢 Empresas</button>
+        </div>
+
+        <!-- SECRETARIAS -->
+        <div id="cad-secretarias" class="cad-painel">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+            <button class="btn btn-primario" onclick="cadNovaSecretaria()">+ Nova Secretaria</button>
+          </div>
+          <div id="cadSecLista"></div>
+        </div>
+
+        <!-- FORNECEDORES -->
+        <div id="cad-fornecedores" class="cad-painel" style="display:none">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+            <button class="btn btn-primario" onclick="cadNovoFornecedor()">+ Novo Fornecedor</button>
+          </div>
+          <div id="cadFornLista"></div>
+        </div>
+
+        <!-- CATÁLOGO -->
+        <div id="cad-catalogo" class="cad-painel" style="display:none">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+            <button class="btn btn-primario" onclick="cadNovoCatalogo()">+ Novo Item</button>
+          </div>
+          <div id="cadCatLista"></div>
+        </div>
+
+        <!-- EMPRESAS -->
+        <div id="cad-empresas" class="cad-painel" style="display:none">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+            <button class="btn btn-primario" onclick="cadNovaEmpresa()">+ Nova Empresa</button>
+          </div>
+          <div id="cadEmpLista"></div>
         </div>
       </div>
 
-      <!-- Secretarias -->
+      <!-- Secretarias (redireciona para Fornecedores/Cadastros) -->
       <div class="view" id="vwSecretarias">
-        <div class="pg-titulo">
-          <h1>🏛 Secretarias</h1>
-          <p>Cadastro de secretarias municipais</p>
-        </div>
-        <div class="card" style="text-align:center; padding: 3rem; color: #94A3B8;">
-          <div style="font-size:3rem; margin-bottom:1rem">🏛</div>
-          <p>Módulo de Secretarias em construção...</p>
-        </div>
+        <div class="pg-titulo"><h1>🏛 Secretarias</h1></div>
       </div>
 
-      <!-- Catálogo -->
+      <!-- Catálogo (redireciona para Fornecedores/Cadastros) -->
       <div class="view" id="vwCatalogo">
-        <div class="pg-titulo">
-          <h1>📦 Catálogo</h1>
-          <p>Catálogo de serviços e equipamentos</p>
-        </div>
-        <div class="card" style="text-align:center; padding: 3rem; color: #94A3B8;">
-          <div style="font-size:3rem; margin-bottom:1rem">📦</div>
-          <p>Módulo de Catálogo em construção...</p>
-        </div>
+        <div class="pg-titulo"><h1>📦 Catálogo</h1></div>
       </div>
 
       <!-- Relatórios -->
@@ -556,6 +575,77 @@
 
 </div><!-- /pgApp -->
 
+
+<!-- MODAL SECRETARIA -->
+<div id="modalSecretaria" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:420px;margin:1rem">
+    <div class="card-hdr"><h3>🏛 Secretaria</h3><button onclick="cadFecharModal('modalSecretaria')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button></div>
+    <input type="hidden" id="cadSecId">
+    <div class="campo"><label>Nome <span class="obrigatorio">*</span></label><input type="text" id="cadSecNome" placeholder="Ex: Secretaria de Educação"></div>
+    <div class="campo"><label>Sigla</label><input type="text" id="cadSecSigla" placeholder="Ex: SME"></div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-secundario" onclick="cadFecharModal('modalSecretaria')">Cancelar</button>
+      <button class="btn btn-primario" onclick="cadSalvarSecretaria()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FORNECEDOR -->
+<div id="modalFornecedor" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;overflow-y:auto;padding:1rem">
+  <div class="card" style="width:100%;max-width:480px">
+    <div class="card-hdr"><h3>🤝 Fornecedor</h3><button onclick="cadFecharModal('modalFornecedor')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button></div>
+    <input type="hidden" id="cadFornId">
+    <div class="campo"><label>Nome <span class="obrigatorio">*</span></label><input type="text" id="cadFornNome" placeholder="Nome do fornecedor"></div>
+    <div class="campo"><label>CNPJ / CPF</label><input type="text" id="cadFornDoc" placeholder="00.000.000/0001-00"></div>
+    <div class="campo"><label>Responsável</label><input type="text" id="cadFornResp" placeholder="Nome do responsável"></div>
+    <div class="campo"><label>Telefone</label><input type="tel" id="cadFornTel" placeholder="(00) 00000-0000"></div>
+    <div class="row2">
+      <div class="campo"><label>Prazo de Pagamento</label><input type="text" id="cadFornPrazo" placeholder="Ex: 30D, 45D"></div>
+      <div class="campo"><label>Tipo de Serviço</label><input type="text" id="cadFornTipo" placeholder="Ex: Som, Estrutura"></div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-secundario" onclick="cadFecharModal('modalFornecedor')">Cancelar</button>
+      <button class="btn btn-primario" onclick="cadSalvarFornecedor()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATÁLOGO -->
+<div id="modalCatalogo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:420px;margin:1rem">
+    <div class="card-hdr"><h3>📦 Item do Catálogo</h3><button onclick="cadFecharModal('modalCatalogo')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button></div>
+    <input type="hidden" id="cadCatId">
+    <div class="campo"><label>Nome do Serviço <span class="obrigatorio">*</span></label><input type="text" id="cadCatNome" placeholder="Ex: Sonorização Padrão"></div>
+    <div class="campo"><label>Categoria</label>
+      <select id="cadCatCategoria">
+        <option value="">Selecione...</option>
+        <option>Som</option><option>Iluminação</option><option>Estrutura</option>
+        <option>Alimentação</option><option>Logística</option><option>Produtor</option><option>Outros</option>
+      </select>
+    </div>
+    <div class="campo"><label>Descrição Padrão</label><input type="text" id="cadCatDesc" placeholder="Ex: 4 caixas + Retorno"></div>
+    <div class="campo"><label>Período Padrão</label>
+      <select id="cadCatPeriodo"><option value="Unid">Unid</option><option value="Dia">Dia</option></select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-secundario" onclick="cadFecharModal('modalCatalogo')">Cancelar</button>
+      <button class="btn btn-primario" onclick="cadSalvarCatalogo()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EMPRESA -->
+<div id="modalEmpresa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:380px;margin:1rem">
+    <div class="card-hdr"><h3>🏢 Empresa</h3><button onclick="cadFecharModal('modalEmpresa')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button></div>
+    <input type="hidden" id="cadEmpId">
+    <div class="campo"><label>Nome <span class="obrigatorio">*</span></label><input type="text" id="cadEmpNome" placeholder="Nome da empresa"></div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-secundario" onclick="cadFecharModal('modalEmpresa')">Cancelar</button>
+      <button class="btn btn-primario" onclick="cadSalvarEmpresa()">Salvar</button>
+    </div>
+  </div>
+</div>
 
 <!-- Toast de notificações -->
 <div id="toast"></div>
