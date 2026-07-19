@@ -647,3 +647,24 @@ a { color: var(--cor-acento); text-decoration: none; }
 /* Etapas do formulário */
 .vt-etapa { display: none; }
 .vt-etapa.ativa { display: block; }
+
+/* ── Resumo da VT ── */
+.vt-resumo-bloco {
+  padding: .75rem 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+.vt-resumo-bloco:last-child { border-bottom: none; }
+.vt-resumo-titulo {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+  margin-bottom: .4rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.vt-resumo-linha {
+  font-size: .875rem;
+  color: var(--cor-texto-leve);
+  margin-bottom: .2rem;
+  line-height: 1.5;
+}
