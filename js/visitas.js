@@ -251,7 +251,10 @@ function vtAvancarEtapa1() {
 ══════════════════════════════════════ */
 
 function vtAcaoEnviarOrcamento(id) {
-  toast('Módulo de Orçamentos em breve...', 'ok');
+  GepNav.ir('orcamentos');
+  setTimeout(() => {
+    if (typeof orcAbrirDaVT === 'function') orcAbrirDaVT(id);
+  }, 300);
 }
 
 async function vtAcaoTransferir(id) {
