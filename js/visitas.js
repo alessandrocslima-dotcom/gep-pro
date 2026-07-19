@@ -98,6 +98,7 @@ function vtRenderizarCard(vt) {
         </div>
         <div class="vt-card-acoes">
           <button class="btn btn-sucesso btn-sm" onclick="vtAcaoWA('${vt.id}')">💬 WhatsApp</button>
+          <button class="btn btn-secundario btn-sm" onclick="vtAcaoTransferir('${vt.id}')">👥 Transferir</button>
           <button class="btn btn-secundario btn-sm" onclick="vtAcaoEditar('${vt.id}')">✏️ Editar</button>
           <button class="btn btn-primario btn-sm" onclick="vtAcaoEnviarOrcamento('${vt.id}')">📤 Enviar p/ Orçamento</button>
           <button class="btn btn-perigo btn-sm" onclick="vtAcaoExcluir('${vt.id}')">🗑 Excluir</button>
@@ -253,8 +254,66 @@ function vtAcaoEnviarOrcamento(id) {
   toast('Módulo de Orçamentos em breve...', 'ok');
 }
 
+async function vtAcaoTransferir(id) {
+  try {
+    // Buscar produtores da mesma empresa
+    const usuario = GepAuth.usuario;
+    const todos = await GepFirebase.listar('usuarios');
+    const produtores = todos.filter(u =>
+      u.id !== usuario.id &&
+      u.ativo !== false &&
+      (GepAuth.ehAdmin() || u.empresa === usuario.empresa)
+    );
+
+    if (!produtores.length) {
+      toast('Nenhum produtor disponível para transferir.', 'erro');
+      return;
+    }
+
+    // Montar opções
+    const opcoes = produtores.map((p, i) => `${i+1}. ${p.nome || p.email}`).join('\n');
+    const escolha = prompt('Transferir para qual produtor?\n\n' + opcoes + '\n\nDigite o número:');
+    if (!escolha) return;
+
+    const idx = parseInt(escolha) - 1;
+    if (idx < 0 || idx >= produtores.length) {
+      toast('Opção inválida.', 'erro');
+      return;
+    }
+
+    const destino = produtores[idx];
+    await GepFirebase.salvar('visitas', id, {
+      produtorId:   destino.id,
+      produtorNome: destino.nome || destino.email,
+      atualizadoEm: new Date().toISOString()
+    });
+
+    toast('Visita transferida para ' + (destino.nome || destino.email) + '!', 'ok');
+    vtRenderizarLista();
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao transferir.', 'erro');
+  }
+}
+
 function vtAcaoEditar(id) {
-  toast('Editar em breve...', 'ok');
+  GepFirebase.buscar('visitas', id).then(vt => {
+    if (!vt) { toast('Visita não encontrada.', 'erro'); return; }
+    vtEditandoId = id;
+    vtDados = { ...vt };
+    vtContatos = vt.contatos || [];
+    vtDemandas = vt.demandas || [];
+    vtGPS      = vt.gps || null;
+    vtGPSRisco = vt.gpsRisco || null;
+    vtEtapaAtual = 1;
+
+    document.getElementById('vwDashboard').classList.remove('ativa');
+    document.getElementById('vwVtForm').classList.add('ativa');
+    document.getElementById('tbTitulo').textContent = 'Editar Visita';
+    document.getElementById('tbBreadcrumb').innerHTML = '📝 Visitas Técnicas / Editar';
+
+    vtIrEtapa(1);
+  }).catch(() => toast('Erro ao carregar visita.', 'erro'));
 }
 
 function vtAcaoWA(id) {
@@ -828,5 +887,6 @@ window.vtAbrirMaps        = vtAbrirMaps;
 window.vtIrEtapa          = vtIrEtapa;
 window.vtAcaoEditar           = vtAcaoEditar;
 window.vtAcaoEnviarOrcamento  = vtAcaoEnviarOrcamento;
+window.vtAcaoTransferir       = vtAcaoTransferir;
 window.vtAcaoWA           = vtAcaoWA;
 window.vtAcaoExcluir      = vtAcaoExcluir;
