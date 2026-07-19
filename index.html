@@ -830,7 +830,12 @@
       <div class="view" id="vwSecretarias">
         <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
           <div><h1>🏛 Secretarias</h1><p>Cadastro de secretarias municipais</p></div>
-          <button class="btn btn-primario" onclick="cadNovaSecretaria()">+ Nova Secretaria</button>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-primario" onclick="cadNovaSecretaria()">+ Nova Secretaria</button>
+            <button class="btn btn-secundario" onclick="cadImportarSecretarias()">📥 Importar</button>
+            <button class="btn btn-secundario" onclick="cadExportarSecretarias()">📤 Exportar</button>
+            <button class="btn btn-secundario" onclick="cadBaixarModeloSecretaria()">📋 Modelo</button>
+          </div>
         </div>
         <div id="cadSecLista"></div>
       </div>
@@ -839,7 +844,12 @@
       <div class="view" id="vwFornecedores">
         <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
           <div><h1>🤝 Fornecedores</h1><p>Cadastro de fornecedores de serviços</p></div>
-          <button class="btn btn-primario" onclick="cadNovoFornecedor()">+ Novo Fornecedor</button>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-primario" onclick="cadNovoFornecedor()">+ Novo Fornecedor</button>
+            <button class="btn btn-secundario" onclick="cadImportarFornecedores()">📥 Importar</button>
+            <button class="btn btn-secundario" onclick="cadExportarFornecedores()">📤 Exportar</button>
+            <button class="btn btn-secundario" onclick="cadBaixarModeloFornecedor()">📋 Modelo</button>
+          </div>
         </div>
         <div id="cadFornLista"></div>
       </div>
@@ -1019,6 +1029,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <!-- GEP — Fundação -->
+<!-- SheetJS para importar/exportar Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/firebase.js"></script>
 <script src="js/auth.js"></script>
