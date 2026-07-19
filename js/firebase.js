@@ -88,6 +88,14 @@ function fbListar(colecao, filtros = []) {
   return query.get().then(snap => snap.docs.map(d => ({ id: d.id, ...d.data() })));
 }
 
+/* Atualizar campos específicos sem sobrescrever */
+function fbAtualizar(colecao, id, campos) {
+  return firebaseDb.collection(colecao).doc(id).update({
+    ...campos,
+    atualizadoEm: new Date().toISOString()
+  });
+}
+
 /* Excluir documento */
 function fbExcluir(colecao, id) {
   return firebaseDb.collection(colecao).doc(id).delete();
