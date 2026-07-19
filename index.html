@@ -415,11 +415,18 @@
           </div>
         </div>
         <div class="vt-etapa" id="vtEtapa4">
-          <div class="card" style="text-align:center;padding:3rem;color:#94A3B8">
-            <p>Etapa 4 — Detalhes em construção...</p>
-            <div style="display:flex;justify-content:space-between;margin-top:2rem">
+          <div class="card">
+            <div class="card-hdr"><h3>📝 Observações</h3></div>
+
+            <div class="campo">
+              <label>Observações gerais do local</label>
+              <textarea id="vtObservacoes" rows="8"
+                placeholder="Ex: Local tem tomadas de 220v apenas. Portaria fecha às 18h. Precisa de autorização da Subprefeitura. Estacionamento limitado..."></textarea>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:1.5rem">
               <button class="btn btn-secundario" onclick="vtIrEtapa(3)">← Anterior</button>
-              <button class="btn btn-primario" onclick="vtIrEtapa(5)">Próximo →</button>
+              <button class="btn btn-primario" onclick="vtAvancarEtapa4()">Próximo →</button>
             </div>
           </div>
         </div>
