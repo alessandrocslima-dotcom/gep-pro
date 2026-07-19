@@ -70,20 +70,28 @@ async function vtRenderizarLista() {
 }
 
 function vtRenderizarCard(vt) {
-  const data = vt.dataEvento ? GepUtils.formatarData(vt.dataEvento) : '—';
-  const hora = vt.horaEvento || '—';
+  const dataISO = vt.dataInicio || vt.dataEvento || null;
+  const hora    = vt.horaInicio || vt.horaEvento || null;
   const empresa = vt.empresaNome || vt.empresaId || '—';
+  const MESES   = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+  let dia = '—', mes = '—';
+  if (dataISO) {
+    const dt = new Date(dataISO + 'T00:00:00');
+    dia = dt.getDate();
+    mes = MESES[dt.getMonth()];
+  }
 
   return `
     <div class="vt-card" data-id="${vt.id}">
       <div class="vt-card-data">
-        <span class="vt-card-dia">${vt.dataEvento ? new Date(vt.dataEvento + 'T00:00:00').getDate() : '—'}</span>
-        <span class="vt-card-mes">${vt.dataEvento ? ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'][new Date(vt.dataEvento + 'T00:00:00').getMonth()] : '—'}</span>
+        <span class="vt-card-dia">${dia}</span>
+        <span class="vt-card-mes">${mes}</span>
       </div>
       <div class="vt-card-info">
         <div class="vt-card-nome">${vt.nomeEvento || 'Sem nome'}</div>
         <div class="vt-card-detalhes">
-          ${hora !== '—' ? `<span>🕐 ${hora}</span>` : ''}
+          ${hora ? `<span>🕐 ${hora}</span>` : ''}
           ${vt.endereco ? `<span>📍 ${vt.endereco}</span>` : ''}
           <span class="${vt.empresaId === 'inter' ? 'badge-inter' : 'badge-vivere'}">${empresa}</span>
           <span>👤 ${vt.produtorNome || '—'}</span>
@@ -91,6 +99,7 @@ function vtRenderizarCard(vt) {
         <div class="vt-card-acoes">
           <button class="btn btn-sucesso btn-sm" onclick="vtAcaoWA('${vt.id}')">💬 WhatsApp</button>
           <button class="btn btn-secundario btn-sm" onclick="vtAcaoEditar('${vt.id}')">✏️ Editar</button>
+          <button class="btn btn-primario btn-sm" onclick="vtAcaoEnviarOrcamento('${vt.id}')">📤 Enviar p/ Orçamento</button>
           <button class="btn btn-perigo btn-sm" onclick="vtAcaoExcluir('${vt.id}')">🗑 Excluir</button>
         </div>
       </div>
@@ -142,6 +151,8 @@ function vtIrEtapa(etapa) {
   if (etapa === 1) vtPreencherEtapa1();
   if (etapa === 2) vtPreencherEtapa2();
   if (etapa === 3) vtPreencherEtapa3();
+  if (etapa === 4) vtPreencherEtapa4();
+  if (etapa === 5) vtPreencherEtapa5();
 }
 
 function vtAtualizarProgresso() {
@@ -237,6 +248,10 @@ function vtAvancarEtapa1() {
 /* ══════════════════════════════════════
    AÇÕES NOS CARDS
 ══════════════════════════════════════ */
+
+function vtAcaoEnviarOrcamento(id) {
+  toast('Módulo de Orçamentos em breve...', 'ok');
+}
 
 function vtAcaoEditar(id) {
   toast('Editar em breve...', 'ok');
@@ -500,16 +515,14 @@ function vtRenderizarDemandas() {
   }
 
   lista.innerHTML = vtDemandas.map((d, i) => `
-    <div style="display:grid;grid-template-columns:2fr 2fr 80px 80px 90px 36px;gap:.5rem;align-items:center;padding:.5rem;background:#F8FAFC;border-radius:8px;margin-bottom:.4rem">
+    <div style="display:grid;grid-template-columns:2fr 2fr 60px 60px 80px 36px 36px;gap:.4rem;align-items:center;padding:.6rem .5rem;background:#F8FAFC;border-radius:8px;margin-bottom:.4rem">
       <div style="font-size:.85rem;font-weight:600;color:#0F172A">${d.servico || '—'}</div>
       <div style="font-size:.8rem;color:#64748B">${d.descricao || '—'}</div>
       <div style="font-size:.8rem;text-align:center;color:#0F172A">${d.qtde || 1}</div>
       <div style="font-size:.8rem;text-align:center;color:#0F172A">${d.freq || 1}</div>
       <div style="font-size:.8rem;text-align:center"><span style="background:#DBEAFE;color:#1D4ED8;padding:.15rem .5rem;border-radius:99px;font-size:.75rem;font-weight:600">${d.periodo || 'Unid'}</span></div>
-      <div style="display:flex;gap:.25rem">
-        <button onclick="vtEditarDemanda(${i})" style="background:none;border:none;color:#2563EB;cursor:pointer;font-size:.9rem" title="Editar">✏️</button>
-        <button onclick="vtRemoverDemanda(${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:.9rem" title="Remover">✕</button>
-      </div>
+      <button onclick="vtEditarDemanda(${i})" style="background:none;border:none;color:#2563EB;cursor:pointer;font-size:1rem;padding:0" title="Editar">✏️</button>
+      <button onclick="vtRemoverDemanda(${i})" style="background:none;border:none;color:#DC2626;cursor:pointer;font-size:1rem;padding:0" title="Remover">✕</button>
     </div>`).join('');
 }
 
@@ -592,6 +605,135 @@ function vtAvancarEtapa3() {
   vtIrEtapa(4);
 }
 
+
+/* ══════════════════════════════════════
+   ETAPA 4 — OBSERVAÇÕES
+══════════════════════════════════════ */
+
+function vtPreencherEtapa4() {
+  const campo = document.getElementById('vtObservacoes');
+  if (campo && vtDados.observacoes) campo.value = vtDados.observacoes;
+}
+
+function vtAvancarEtapa4() {
+  vtDados.observacoes = document.getElementById('vtObservacoes').value.trim();
+  vtIrEtapa(5);
+}
+
+
+/* ══════════════════════════════════════
+   ETAPA 5 — RESUMO
+══════════════════════════════════════ */
+
+function vtPreencherEtapa5() {
+  const el = document.getElementById('vtResumoConteudo');
+  if (!el) return;
+
+  const d = vtDados;
+
+  // Formatar data
+  function fmtData(iso) {
+    if (!iso) return '—';
+    const dt = new Date(iso + 'T00:00:00');
+    return dt.toLocaleDateString('pt-BR');
+  }
+
+  let html = '';
+
+  // Cabeçalho
+  html += `<div class="vt-resumo-bloco">
+    <div class="vt-resumo-linha"><strong>🗺 VISITA TÉCNICA</strong> | ${d.empresaNome || '—'}</div>
+    <div class="vt-resumo-linha">👤 Produtor: ${d.produtorNome || '—'}</div>
+  </div>`;
+
+  // Evento
+  html += `<div class="vt-resumo-bloco">
+    <div class="vt-resumo-titulo">📋 EVENTO</div>
+    <div class="vt-resumo-linha">- Nome: ${d.nomeEvento || '—'}</div>
+    <div class="vt-resumo-linha">- Endereço: ${d.endereco || '—'}</div>`;
+
+  if (d.gps) {
+    html += `<div class="vt-resumo-linha">- <a href="https://maps.google.com/?q=${d.gps.lat},${d.gps.lng}" target="_blank" style="color:#2563EB">📍 Google Maps</a> | <a href="https://waze.com/ul?ll=${d.gps.lat},${d.gps.lng}&navigate=yes" target="_blank" style="color:#2563EB">🗺 Waze</a></div>`;
+  } else if (d.endereco) {
+    html += `<div class="vt-resumo-linha">- <a href="https://maps.google.com/?q=${encodeURIComponent(d.endereco)}" target="_blank" style="color:#2563EB">📍 Google Maps</a> | <a href="https://waze.com/ul?q=${encodeURIComponent(d.endereco)}&navigate=yes" target="_blank" style="color:#2563EB">🗺 Waze</a></div>`;
+  }
+
+  if (d.dataInicio) html += `<div class="vt-resumo-linha">- Data: ${fmtData(d.dataInicio)}${d.horaInicio ? ' às ' + d.horaInicio : ''}</div>`;
+  if (d.dataFim)   html += `<div class="vt-resumo-linha">- Término: ${fmtData(d.dataFim)}${d.horaFim ? ' às ' + d.horaFim : ''}</div>`;
+  if (d.publico)   html += `<div class="vt-resumo-linha">- Público: ${d.publico}</div>`;
+  html += '</div>';
+
+  // Área de risco
+  if (d.areaRisco) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">⚠️ ÁREA DE RISCO</div>`;
+    if (d.pontoEncontro) html += `<div class="vt-resumo-linha">- Ponto de encontro: ${d.pontoEncontro}</div>`;
+    if (d.contatoLocal)  html += `<div class="vt-resumo-linha">- Contato: ${d.contatoLocal}</div>`;
+    html += '</div>';
+  }
+
+  // Montagem — aparece se tiver data OU horário
+  if (d.dataMontagem || d.horaMontagem) {
+    let montStr = '';
+    if (d.dataMontagem) montStr += fmtData(d.dataMontagem);
+    if (d.horaMontagem) montStr += (montStr ? ' às ' : '') + d.horaMontagem;
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">🔧 MONTAGEM</div>
+      <div class="vt-resumo-linha">- ${montStr || '—'}</div>
+    </div>`;
+  }
+
+  // Demandas
+  if (d.demandas && d.demandas.length) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">📦 DEMANDAS</div>`;
+    d.demandas.forEach(dem => {
+      html += `<div class="vt-resumo-linha">- ${dem.servico}${dem.descricao ? ' ('+dem.descricao+')' : ''} — Qtd: ${dem.qtde}</div>`;
+    });
+    html += '</div>';
+  }
+
+  // Observações
+  if (d.observacoes) {
+    html += `<div class="vt-resumo-bloco">
+      <div class="vt-resumo-titulo">📝 OBSERVAÇÕES</div>
+      <div class="vt-resumo-linha" style="white-space:pre-wrap">${d.observacoes}</div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
+}
+
+async function vtSalvarVisita() {
+  const btn = document.getElementById('vtBtnSalvar');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Salvando...'; }
+
+  try {
+    const usuario = GepAuth.usuario;
+    const agora = new Date().toISOString();
+
+    const dados = {
+      ...vtDados,
+      produtorId:   usuario.id,
+      produtorNome: usuario.nome || usuario.email,
+      empresaId:    vtDados.empresaId,
+      criadoEm:     vtEditandoId ? vtDados.criadoEm : agora,
+      atualizadoEm: agora
+    };
+
+    const id = vtEditandoId || GepUtils.gerarId('vt');
+    await GepFirebase.salvar('visitas', id, dados);
+
+    toast('Visita técnica salva com sucesso! ✓', 'ok');
+    setTimeout(() => vtFecharFormulario(), 800);
+
+  } catch(e) {
+    console.error('Erro ao salvar:', e);
+    toast('Erro ao salvar. Tente novamente.', 'erro');
+    if (btn) { btn.disabled = false; btn.textContent = '✅ Salvar Visita'; }
+  }
+}
+
 /* ── Exportar ── */
 window.GepVisitas = {
   inicializar:      vtInicializar,
@@ -619,6 +761,8 @@ window.vtAdicionarDemanda = vtAdicionarDemanda;
 window.vtRemoverDemanda   = vtRemoverDemanda;
 window.vtEditarDemanda    = vtEditarDemanda;
 window.vtAvancarEtapa3    = vtAvancarEtapa3;
+window.vtAvancarEtapa4    = vtAvancarEtapa4;
+window.vtSalvarVisita     = vtSalvarVisita;
 window.vtToggleRisco      = vtToggleRisco;
 window.vtAdicionarContato = vtAdicionarContato;
 window.vtRemoverContato   = vtRemoverContato;
@@ -626,6 +770,7 @@ window.vtCapturarGPS      = vtCapturarGPS;
 window.vtAbrirWaze        = vtAbrirWaze;
 window.vtAbrirMaps        = vtAbrirMaps;
 window.vtIrEtapa          = vtIrEtapa;
-window.vtAcaoEditar       = vtAcaoEditar;
+window.vtAcaoEditar           = vtAcaoEditar;
+window.vtAcaoEnviarOrcamento  = vtAcaoEnviarOrcamento;
 window.vtAcaoWA           = vtAcaoWA;
 window.vtAcaoExcluir      = vtAcaoExcluir;
