@@ -449,14 +449,153 @@
 
       <!-- Orçamentos -->
       <div class="view" id="vwOrcamentos">
-        <div class="pg-titulo">
-          <h1>💰 Orçamentos</h1>
-          <p>Gerencie os orçamentos dos eventos</p>
+
+        <!-- LISTA DE ORÇAMENTOS -->
+        <div id="orcViewLista">
+          <div class="pg-titulo">
+            <h1>💰 Orçamentos</h1>
+            <p>Planilhas orçamentárias dos eventos</p>
+          </div>
+          <div id="orcLista"></div>
         </div>
-        <div class="card" style="text-align:center; padding: 3rem; color: #94A3B8;">
-          <div style="font-size:3rem; margin-bottom:1rem">💰</div>
-          <p>Módulo de Orçamentos em construção...</p>
-        </div>
+
+        <!-- PLANILHA INICIAL -->
+        <div id="orcViewPlanilha" style="display:none">
+
+          <!-- Barra superior -->
+          <div class="orc-topbar">
+            <button class="btn btn-secundario btn-sm" onclick="orcVoltarLista()">← Voltar</button>
+            <div class="orc-topbar-titulo">💰 Planilha Inicial</div>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <select id="orcStatus" class="orc-status-sel" onchange="orcAtualizarTotais()">
+                <option value="elaboracao">✏️ Em elaboração</option>
+                <option value="enviado">📤 Enviado</option>
+                <option value="aprovado">✅ Aprovado</option>
+                <option value="recusado">❌ Recusado</option>
+              </select>
+              <button class="btn btn-primario btn-sm" id="orcBtnSalvar" onclick="orcSalvar()">💾 Salvar</button>
+            </div>
+          </div>
+
+          <!-- CABEÇALHO -->
+          <div class="orc-section">
+            <div class="orc-section-titulo">PLANILHA INICIAL</div>
+            <div class="orc-cabecalho-grid">
+              <div class="orc-cab-row">
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">Nº DO EVENTO</div>
+                  <input class="orc-cab-input" id="orcNumEvento" placeholder="Ex: 397.26">
+                </div>
+                <div class="orc-cab-field orc-cab-md">
+                  <div class="orc-cab-label">CLIENTE</div>
+                  <input class="orc-cab-input" id="orcCliente" placeholder="Secretaria ou cliente">
+                </div>
+                <div class="orc-cab-field orc-cab-lg">
+                  <div class="orc-cab-label">NOME DO EVENTO</div>
+                  <input class="orc-cab-input" id="orcNomeEvento" placeholder="Nome da ação/evento">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">DATA INÍCIO</div>
+                  <input class="orc-cab-input" id="orcDataInicio" type="date">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">DATA FIM</div>
+                  <input class="orc-cab-input" id="orcDataFim" type="date">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">HORÁRIO</div>
+                  <div style="display:flex;gap:4px;align-items:center">
+                    <input class="orc-cab-input" id="orcHoraInicio" type="time" style="flex:1">
+                    <span style="color:#94A3B8;font-size:.75rem">às</span>
+                    <input class="orc-cab-input" id="orcHoraFim" type="time" style="flex:1">
+                  </div>
+                </div>
+              </div>
+              <div class="orc-cab-row">
+                <div class="orc-cab-field" style="flex:3">
+                  <div class="orc-cab-label">LOCAL</div>
+                  <input class="orc-cab-input" id="orcLocal" placeholder="Endereço do evento">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">PÚBLICO ESTIMADO</div>
+                  <input class="orc-cab-input" id="orcPublico" placeholder="Ex: 500 pessoas">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">MONTAGEM</div>
+                  <div style="display:flex;gap:4px;align-items:center">
+                    <input class="orc-cab-input" id="orcDataMont" type="date" style="flex:1">
+                    <input class="orc-cab-input" id="orcHoraMont" type="time" style="flex:1">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABELA DE SERVIÇOS -->
+          <div class="orc-section">
+            <div class="orc-section-header">
+              <div class="orc-section-titulo">SERVIÇOS</div>
+              <button class="btn btn-secundario btn-sm" onclick="orcAdicionarLinha()">+ Adicionar linha</button>
+            </div>
+            <div class="orc-tabela-wrap">
+              <table class="orc-tabela">
+                <thead>
+                  <tr>
+                    <th>SERVIÇO</th>
+                    <th>DESCRIÇÃO DO SERVIÇO</th>
+                    <th>QTDE</th>
+                    <th>PREÇO UNIT.</th>
+                    <th>FREQ.</th>
+                    <th>UND</th>
+                    <th>VALOR FINAL</th>
+                    <th>FORNECEDOR</th>
+                    <th>FORMA PGTO</th>
+                    <th>OBS</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="orcTbody"></tbody>
+              </table>
+            </div>
+            <div class="orc-subtotal">
+              SUBTOTAL DOS SERVIÇOS: <span id="orcSubtotal">R$ 0,00</span>
+            </div>
+          </div>
+
+          <!-- VERBA DE PRODUÇÃO -->
+          <div class="orc-section orc-verba">
+            <div class="orc-section-titulo">VERBA DE PRODUÇÃO</div>
+            <div style="display:flex;align-items:center;gap:1rem;margin-top:.5rem">
+              <span style="font-size:.85rem;color:#64748B">Valor total:</span>
+              <div style="display:flex;align-items:center;gap:.25rem">
+                <span style="color:#64748B;font-size:.9rem">R$</span>
+                <input type="number" id="orcVerbaProd" value="0" min="0" step="0.01"
+                       class="orc-verba-input" onchange="orcAtualizarTotais()" oninput="orcAtualizarTotais()">
+              </div>
+            </div>
+          </div>
+
+          <!-- TOTAIS -->
+          <div class="orc-section orc-totais">
+            <div class="orc-total-row">
+              <span class="orc-total-label">TOTAL DO EVENTO</span>
+              <span class="orc-total-valor" id="orcTotalEvento">R$ 0,00</span>
+            </div>
+            <div class="orc-total-row orc-fator-row">
+              <div style="display:flex;align-items:center;gap:.75rem">
+                <span class="orc-total-label">FATOR</span>
+                <input type="number" id="orcFator" value="1.8" min="1" step="0.1"
+                       class="orc-fator-input" onchange="orcAtualizarTotais()" oninput="orcAtualizarTotais()">
+              </div>
+              <span class="orc-total-valor orc-total-destaque" id="orcTotalFator">R$ 0,00</span>
+            </div>
+            <div class="orc-produtor-row">
+              <span style="font-size:.8rem;color:#64748B">Produtor Responsável:</span>
+              <span class="orc-produtor-nome" id="orcProdutorNome">—</span>
+            </div>
+          </div>
+
+        </div><!-- /orcViewPlanilha -->
       </div>
 
       <!-- Agenda -->
@@ -663,7 +802,7 @@
 
 <!-- GEP — Módulos (serão adicionados aqui conforme construídos) -->
 <script src="js/visitas.js"></script>
-<!-- <script src="js/orcamentos.js"></script> -->
+<script src="js/orcamentos.js"></script>
 <!-- <script src="js/agenda.js"></script>     -->
 <!-- <script src="js/realizados.js"></script> -->
 <!-- <script src="js/cadastros.js"></script>  -->
