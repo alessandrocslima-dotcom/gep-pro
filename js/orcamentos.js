@@ -75,7 +75,7 @@ async function orcRenderizarLista() {
               <div class="orc-card-info">
                 ${o.local    ? `<span>📍 ${o.local}</span>` : ''}
                 ${hora       ? `<span>🕐 ${hora}</span>` : ''}
-                ${o.empresaNome  ? `<span class="badge-inter">${o.empresaNome}</span>` : ''}
+                ${(o.empresaNome||o.empresaId) ? `<span class="badge-inter">${o.empresaNome||o.empresaId}</span>` : ''}
                 ${o.produtorNome ? `<span>👤 ${o.produtorNome}</span>` : ''}
                 ${o.dataInicio   ? `<span>📅 ${data}</span>` : ''}
               </div>
@@ -228,7 +228,7 @@ async function orcAbrirPlanilha(id) {
     // Preencher cabeçalho
     const campos = {
       'orcNumEvento':   orc.numEvento || '',
-      'orcCliente':     orc.clienteNome || '',
+      'orcCliente':     orc.clienteNome || orc.clienteId || '',
       'orcNomeEvento':  orc.nomeEvento || '',
       'orcDataInicio':  orc.dataInicio || '',
       'orcDataFim':     orc.dataFim || '',
@@ -253,7 +253,8 @@ async function orcAbrirPlanilha(id) {
 
     // Produtor
     const prodEl = document.getElementById('orcProdutorNome');
-    if (prodEl) prodEl.textContent = orc.produtorNome || '—';
+    const prodNome = orc.produtorNome || (GepAuth.usuario && (GepAuth.usuario.nome || GepAuth.usuario.email)) || '—';
+    if (prodEl) prodEl.textContent = prodNome;
 
     // Renderizar tabela
     orcRenderizarTabela();
@@ -361,7 +362,7 @@ async function orcSalvar() {
   try {
     const dados = {
       numEvento:    document.getElementById('orcNumEvento')?.value || '',
-      clienteNome:  document.getElementById('orcCliente')?.value || '',
+      clienteNome:  document.getElementById('orcCliente')?.value.trim() || '',
       nomeEvento:   document.getElementById('orcNomeEvento')?.value || '',
       dataInicio:   document.getElementById('orcDataInicio')?.value || '',
       dataFim:      document.getElementById('orcDataFim')?.value || '',
