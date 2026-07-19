@@ -156,31 +156,66 @@ async function orcExcluir(id) {
 ══════════════════════════════════════ */
 
 async function orcNovoAvulso() {
+  // Carregar empresas no seletor
+  const sel = document.getElementById('avulsoEmpresa');
+  if (sel) {
+    sel.innerHTML = '<option value="">Selecione a empresa...</option>';
+    try {
+      const empresas = await GepFirebase.listar('empresas');
+      empresas.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+      empresas.forEach(e => {
+        const op = document.createElement('option');
+        op.value = e.id;
+        op.textContent = e.nome;
+        sel.appendChild(op);
+      });
+    } catch(err) {
+      // Fallback
+      [{ id:'inter', nome:'InterEventos' }, { id:'vivere', nome:'Vivere' }, { id:'ancom', nome:'AN COM' }]
+        .forEach(e => {
+          const op = document.createElement('option');
+          op.value = e.id; op.textContent = e.nome;
+          sel.appendChild(op);
+        });
+    }
+  }
+  document.getElementById('modalAvulso').style.display = 'flex';
+}
+
+async function orcCriarAvulso() {
+  const sel = document.getElementById('avulsoEmpresa');
+  const empresaId = sel?.value;
+  const empresaNome = sel?.options[sel.selectedIndex]?.text || '';
+
+  if (!empresaId) { toast('Selecione a empresa.', 'erro'); return; }
+
+  document.getElementById('modalAvulso').style.display = 'none';
+
   try {
     const usuario = GepAuth.usuario;
     const novoId  = GepUtils.gerarId('orc');
 
     const dados = {
-      vtId:         null,
-      avulso:       true,
-      nomeEvento:   '',
-      clienteNome:  '',
-      dataInicio:   '',
-      dataFim:      '',
-      horaInicio:   '',
-      horaFim:      '',
-      local:        '',
-      publico:      '',
-      dataMontagem: '',
-      horaMontagem: '',
-      linhas:       [],
+      vtId:             null,
+      avulso:           true,
+      nomeEvento:       '',
+      clienteNome:      '',
+      dataInicio:       '',
+      dataFim:          '',
+      horaInicio:       '',
+      horaFim:          '',
+      local:            '',
+      publico:          '',
+      dataMontagem:     '',
+      horaMontagem:     '',
+      linhas:           [],
       linhasFechamento: [],
-      verbaProd:    0,
-      fator:        1.8,
-      status:       'elaboracao',
-      numEvento:    '',
-      empresaId:    usuario.empresa || '',
-      empresaNome:  usuario.empresaNome || (usuario.empresa === 'inter' ? 'InterEventos' : usuario.empresa === 'vivere' ? 'Vivere' : usuario.empresa) || '',
+      verbaProd:        0,
+      fator:            1.8,
+      status:           'elaboracao',
+      numEvento:        '',
+      empresaId,
+      empresaNome,
       produtorId:   usuario.id,
       produtorNome: usuario.nome || usuario.email,
       criadoEm:     new Date().toISOString()
@@ -596,4 +631,5 @@ window.orcAtualizarTotais = orcAtualizarTotais;
 window.orcSalvar         = orcSalvar;
 window.orcWACotacao       = orcWACotacao;
 window.orcNovoAvulso      = orcNovoAvulso;
+window.orcCriarAvulso     = orcCriarAvulso;
 window.orcExcluir         = orcExcluir;
