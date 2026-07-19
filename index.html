@@ -25,7 +25,7 @@
     <div class="login-logo">
       <span class="logo-icone">🎪</span>
       <h1>Gestão de Eventos <span style="color:#3B82F6">Pro</span></h1>
-      <p>InterEventos · Vivere</p>
+      <p>InterEventos</p>
     </div>
 
     <div class="campo">
@@ -70,7 +70,7 @@
     <!-- Logo -->
     <div class="sb-logo">
       <h2>Gestão de Eventos <span>Pro</span></h2>
-      <p>InterEventos · Vivere</p>
+      <p>InterEventos</p>
     </div>
 
     <!-- Usuário logado -->
@@ -481,6 +481,7 @@
           <div class="orc-section">
             <div class="orc-section-titulo">PLANILHA INICIAL</div>
             <div class="orc-cabecalho-grid">
+              <!-- Linha 1: Nº, Cliente, Nome -->
               <div class="orc-cab-row">
                 <div class="orc-cab-field orc-cab-sm">
                   <div class="orc-cab-label">Nº DO EVENTO</div>
@@ -494,6 +495,9 @@
                   <div class="orc-cab-label">NOME DO EVENTO</div>
                   <input class="orc-cab-input" id="orcNomeEvento" placeholder="Nome da ação/evento">
                 </div>
+              </div>
+              <!-- Linha 2: Datas, Horários e Público -->
+              <div class="orc-cab-row">
                 <div class="orc-cab-field orc-cab-sm">
                   <div class="orc-cab-label">DATA INÍCIO</div>
                   <input class="orc-cab-input" id="orcDataInicio" type="date">
@@ -503,29 +507,31 @@
                   <input class="orc-cab-input" id="orcDataFim" type="date">
                 </div>
                 <div class="orc-cab-field orc-cab-sm">
-                  <div class="orc-cab-label">HORÁRIO</div>
-                  <div style="display:flex;gap:4px;align-items:center">
-                    <input class="orc-cab-input" id="orcHoraInicio" type="time" style="flex:1">
-                    <span style="color:#94A3B8;font-size:.75rem">às</span>
-                    <input class="orc-cab-input" id="orcHoraFim" type="time" style="flex:1">
-                  </div>
+                  <div class="orc-cab-label">HORA INÍCIO</div>
+                  <input class="orc-cab-input" id="orcHoraInicio" type="time">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">HORA FIM</div>
+                  <input class="orc-cab-input" id="orcHoraFim" type="time">
+                </div>
+                <div class="orc-cab-field orc-cab-sm">
+                  <div class="orc-cab-label">PÚBLICO ESTIMADO</div>
+                  <input class="orc-cab-input" id="orcPublico" placeholder="Ex: 500 pessoas">
                 </div>
               </div>
+              <!-- Linha 3: Local e Montagem -->
               <div class="orc-cab-row">
                 <div class="orc-cab-field" style="flex:3">
                   <div class="orc-cab-label">LOCAL</div>
                   <input class="orc-cab-input" id="orcLocal" placeholder="Endereço do evento">
                 </div>
                 <div class="orc-cab-field orc-cab-sm">
-                  <div class="orc-cab-label">PÚBLICO ESTIMADO</div>
-                  <input class="orc-cab-input" id="orcPublico" placeholder="Ex: 500 pessoas">
+                  <div class="orc-cab-label">DATA MONTAGEM</div>
+                  <input class="orc-cab-input" id="orcDataMont" type="date">
                 </div>
                 <div class="orc-cab-field orc-cab-sm">
-                  <div class="orc-cab-label">MONTAGEM</div>
-                  <div style="display:flex;gap:4px;align-items:center">
-                    <input class="orc-cab-input" id="orcDataMont" type="date" style="flex:1">
-                    <input class="orc-cab-input" id="orcHoraMont" type="time" style="flex:1">
-                  </div>
+                  <div class="orc-cab-label">HORA MONTAGEM</div>
+                  <input class="orc-cab-input" id="orcHoraMont" type="time">
                 </div>
               </div>
             </div>
