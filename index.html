@@ -894,6 +894,26 @@
   </div>
 </div>
 
+<!-- MODAL NOVO ORÇAMENTO AVULSO -->
+<div id="modalAvulso" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:380px;margin:1rem">
+    <div class="card-hdr">
+      <h3>💰 Novo Orçamento Avulso</h3>
+      <button onclick="document.getElementById('modalAvulso').style.display='none'" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <div class="campo">
+      <label>Empresa <span class="obrigatorio">*</span></label>
+      <select id="avulsoEmpresa">
+        <option value="">Selecione a empresa...</option>
+      </select>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-secundario" onclick="document.getElementById('modalAvulso').style.display='none'">Cancelar</button>
+      <button class="btn btn-primario" onclick="orcCriarAvulso()">Criar →</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast de notificações -->
 <div id="toast"></div>
 
