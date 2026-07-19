@@ -346,3 +346,146 @@ window.cadEditarEmpresa   = cadEditarEmpresa;
 window.cadSalvarEmpresa   = cadSalvarEmpresa;
 window.cadExcluir         = cadExcluir;
 window.cadFecharModal     = cadFecharModal;
+
+/* ══════════════════════════════════════
+   EXCEL — FORNECEDORES
+══════════════════════════════════════ */
+
+function cadBaixarModeloFornecedor() {
+  const wb = XLSX.utils.book_new();
+  const dados = [
+    ['Nome', 'CNPJ/CPF', 'Responsável', 'Telefone', 'Prazo de Pagamento', 'Tipo de Serviço'],
+    ['1000 Beats', '019.049.677-01', 'Walter', '(21) 96557-9692', '30D', 'Som']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(dados);
+  ws['!cols'] = [{ wch:30 },{ wch:20 },{ wch:20 },{ wch:18 },{ wch:20 },{ wch:20 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Fornecedores');
+  XLSX.writeFile(wb, 'modelo_fornecedores.xlsx');
+}
+
+async function cadExportarFornecedores() {
+  try {
+    const docs = await GepFirebase.listar('fornecedores');
+    docs.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    const wb = XLSX.utils.book_new();
+    const dados = [
+      ['Nome', 'CNPJ/CPF', 'Responsável', 'Telefone', 'Prazo de Pagamento', 'Tipo de Serviço'],
+      ...docs.map(f => [f.nome||'', f.doc||'', f.responsavel||'', f.telefone||'', f.prazoPg||'', f.tipoServico||''])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(dados);
+    ws['!cols'] = [{ wch:30 },{ wch:20 },{ wch:20 },{ wch:18 },{ wch:20 },{ wch:20 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Fornecedores');
+    XLSX.writeFile(wb, 'fornecedores.xlsx');
+    toast('Exportado com sucesso!', 'ok');
+  } catch(e) { toast('Erro ao exportar.', 'erro'); }
+}
+
+function cadImportarFornecedores() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const wb   = XLSX.read(ev.target.result, { type: 'binary' });
+        const ws   = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        // Pular cabeçalho
+        const dados = rows.slice(1).filter(r => r[0]);
+        let count = 0;
+        for (const r of dados) {
+          const id = GepUtils.gerarId('forn');
+          await GepFirebase.salvar('fornecedores', id, {
+            nome:        String(r[0]||'').trim(),
+            doc:         String(r[1]||'').trim(),
+            responsavel: String(r[2]||'').trim(),
+            telefone:    String(r[3]||'').trim(),
+            prazoPg:     String(r[4]||'').trim(),
+            tipoServico: String(r[5]||'').trim()
+          });
+          count++;
+        }
+        toast(`${count} fornecedores importados!`, 'ok');
+        cadCarregarFornecedores();
+      } catch(err) { toast('Erro ao importar. Verifique o arquivo.', 'erro'); }
+    };
+    reader.readAsBinaryString(file);
+  };
+  input.click();
+}
+
+/* ══════════════════════════════════════
+   EXCEL — SECRETARIAS
+══════════════════════════════════════ */
+
+function cadBaixarModeloSecretaria() {
+  const wb = XLSX.utils.book_new();
+  const dados = [
+    ['Nome', 'Sigla'],
+    ['Secretaria Municipal de Educação', 'SME']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(dados);
+  ws['!cols'] = [{ wch:45 },{ wch:15 }];
+  XLSX.utils.book_append_sheet(wb, ws, 'Secretarias');
+  XLSX.writeFile(wb, 'modelo_secretarias.xlsx');
+}
+
+async function cadExportarSecretarias() {
+  try {
+    const docs = await GepFirebase.listar('secretarias');
+    docs.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    const wb = XLSX.utils.book_new();
+    const dados = [
+      ['Nome', 'Sigla'],
+      ...docs.map(s => [s.nome||'', s.sigla||''])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(dados);
+    ws['!cols'] = [{ wch:45 },{ wch:15 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Secretarias');
+    XLSX.writeFile(wb, 'secretarias.xlsx');
+    toast('Exportado com sucesso!', 'ok');
+  } catch(e) { toast('Erro ao exportar.', 'erro'); }
+}
+
+function cadImportarSecretarias() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.xlsx,.xls';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      try {
+        const wb   = XLSX.read(ev.target.result, { type: 'binary' });
+        const ws   = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        const dados = rows.slice(1).filter(r => r[0]);
+        let count = 0;
+        for (const r of dados) {
+          const id = GepUtils.gerarId('sec');
+          await GepFirebase.salvar('secretarias', id, {
+            nome:  String(r[0]||'').trim(),
+            sigla: String(r[1]||'').trim()
+          });
+          count++;
+        }
+        toast(`${count} secretarias importadas!`, 'ok');
+        cadCarregarSecretarias();
+      } catch(err) { toast('Erro ao importar. Verifique o arquivo.', 'erro'); }
+    };
+    reader.readAsBinaryString(file);
+  };
+  input.click();
+}
+
+/* Exports */
+window.cadBaixarModeloFornecedor = cadBaixarModeloFornecedor;
+window.cadExportarFornecedores   = cadExportarFornecedores;
+window.cadImportarFornecedores   = cadImportarFornecedores;
+window.cadBaixarModeloSecretaria = cadBaixarModeloSecretaria;
+window.cadExportarSecretarias    = cadExportarSecretarias;
+window.cadImportarSecretarias    = cadImportarSecretarias;
