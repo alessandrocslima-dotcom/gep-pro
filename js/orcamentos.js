@@ -79,7 +79,7 @@ async function orcRenderizarLista() {
               <div class="orc-card-info">
                 ${o.local    ? `<span>📍 ${o.local}</span>` : ''}
                 ${hora       ? `<span>🕐 ${hora}</span>` : ''}
-                ${(o.empresaNome||o.empresaId) ? `<span class="badge-inter">${o.empresaNome||o.empresaId}</span>` : ''}
+                ${(() => { const en = o.empresaNome || (o.empresaId === 'inter' ? 'InterEventos' : o.empresaId === 'vivere' ? 'Vivere' : o.empresaId); return en ? `<span class="badge-inter">${en}</span>` : ''; })()}
                 ${o.produtorNome ? `<span>👤 ${o.produtorNome}</span>` : ''}
                 ${o.dataInicio   ? `<span>📅 ${data}</span>` : ''}
               </div>
@@ -180,14 +180,15 @@ async function orcNovoAvulso() {
       status:       'elaboracao',
       numEvento:    '',
       empresaId:    usuario.empresa || '',
-      empresaNome:  usuario.empresaNome || '',
+      empresaNome:  usuario.empresaNome || (usuario.empresa === 'inter' ? 'InterEventos' : usuario.empresa === 'vivere' ? 'Vivere' : usuario.empresa) || '',
       produtorId:   usuario.id,
       produtorNome: usuario.nome || usuario.email,
       criadoEm:     new Date().toISOString()
     };
 
     await GepFirebase.salvar('orcamentos', novoId, dados);
-    await orcAbrirPlanilha(novoId);
+    toast('Orçamento avulso criado!', 'ok');
+    orcRenderizarLista();
   } catch(e) {
     console.error(e);
     toast('Erro ao criar orçamento avulso.', 'erro');
@@ -274,6 +275,7 @@ async function orcAbrirPlanilha(id) {
     fchLinhas   = orc.linhasFechamento || [];
 
     // Preencher cabeçalho
+    // Formatar datas para exibição (input type=date usa AAAA-MM-DD internamente — ok)
     const campos = {
       'orcNumEvento':   orc.numEvento || '',
       'orcCliente':     orc.clienteNome || orc.clienteId || '',
@@ -434,6 +436,7 @@ async function orcSalvar() {
 
     await GepFirebase.salvar('orcamentos', orcId, dados);
     toast('Orçamento salvo! ✓', 'ok');
+    setTimeout(() => orcVoltarLista(), 800);
   } catch(e) {
     toast('Erro ao salvar.', 'erro');
   } finally {
@@ -467,17 +470,22 @@ function orcIrAba(aba) {
 
 function fchCarregar() {
   // Replicar cabeçalho da Inicial (só leitura)
+  function fmtDt(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('pt-BR');
+  }
   const campos = {
     'fchNumEvento':  document.getElementById('orcNumEvento')?.value || '—',
     'fchCliente':    document.getElementById('orcCliente')?.value || '—',
     'fchNomeEvento': document.getElementById('orcNomeEvento')?.value || '—',
-    'fchDataInicio': document.getElementById('orcDataInicio')?.value || '—',
-    'fchDataFim':    document.getElementById('orcDataFim')?.value || '—',
+    'fchDataInicio': fmtDt(document.getElementById('orcDataInicio')?.value),
+    'fchDataFim':    fmtDt(document.getElementById('orcDataFim')?.value),
     'fchHoraInicio': document.getElementById('orcHoraInicio')?.value || '—',
     'fchHoraFim':    document.getElementById('orcHoraFim')?.value || '—',
     'fchPublico':    document.getElementById('orcPublico')?.value || '—',
     'fchLocal':      document.getElementById('orcLocal')?.value || '—',
-    'fchDataMont':   document.getElementById('orcDataMont')?.value || '—',
+    'fchDataMont':   fmtDt(document.getElementById('orcDataMont')?.value),
     'fchHoraMont':   document.getElementById('orcHoraMont')?.value || '—'
   };
   Object.entries(campos).forEach(([id, val]) => {
