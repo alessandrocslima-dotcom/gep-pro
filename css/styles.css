@@ -961,3 +961,47 @@ a { color: var(--cor-acento); text-decoration: none; }
   border-top: 1px solid #F1F5F9;
 }
 .orc-produtor-nome { font-size: .85rem; font-weight: 700; color: var(--cor-acento); }
+
+/* ── Abas estilo Excel ── */
+.orc-abas-excel {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--cor-borda);
+}
+.orc-aba-excel {
+  padding: .5rem 1.25rem;
+  border: 1px solid var(--cor-borda);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: #F8FAFC;
+  color: var(--cor-texto-leve);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 4px;
+  transition: all .15s;
+  position: relative;
+  bottom: -2px;
+}
+.orc-aba-excel:hover { background: #F1F5F9; color: var(--cor-texto); }
+.orc-aba-excel.ativa {
+  background: #fff;
+  color: var(--cor-acento);
+  border-color: var(--cor-borda);
+  border-bottom-color: #fff;
+  z-index: 1;
+}
+
+/* Campo somente leitura no fechamento */
+.orc-cab-readonly {
+  padding: .4rem .6rem;
+  font-size: .85rem;
+  color: var(--cor-texto);
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+}
