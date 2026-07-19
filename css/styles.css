@@ -717,3 +717,249 @@ a { color: var(--cor-acento); text-decoration: none; }
   align-items: center;
 }
 .cad-item-acoes { display: flex; gap: .4rem; flex-shrink: 0; }
+
+/* ══════════════════════════════════════
+   ORÇAMENTOS — LISTA
+══════════════════════════════════════ */
+
+.orc-card {
+  background: #fff;
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-acento);
+  border-radius: var(--raio);
+  padding: 1rem 1.25rem;
+  margin-bottom: .75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+  box-shadow: var(--sombra);
+  transition: box-shadow .15s, transform .1s;
+}
+.orc-card:hover { box-shadow: var(--sombra-md); transform: translateY(-1px); }
+.orc-card-left { flex: 1; min-width: 0; }
+.orc-card-nome { font-size: .95rem; font-weight: 600; color: var(--cor-texto); margin-bottom: .3rem; }
+.orc-card-info { display: flex; flex-wrap: wrap; gap: .5rem; font-size: .78rem; color: var(--cor-texto-leve); align-items: center; }
+.orc-card-right { text-align: right; flex-shrink: 0; }
+.orc-card-total { font-size: 1.1rem; font-weight: 700; color: var(--cor-texto); margin-bottom: .3rem; }
+.orc-card-status { font-size: .72rem; font-weight: 700; padding: .2rem .6rem; border-radius: 99px; }
+
+/* ══════════════════════════════════════
+   ORÇAMENTOS — PLANILHA
+══════════════════════════════════════ */
+
+.orc-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.orc-topbar-titulo {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+.orc-status-sel {
+  padding: .4rem .75rem;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 8px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Seções */
+.orc-section {
+  background: #fff;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+.orc-section-titulo {
+  background: #F1F5F9;
+  border-bottom: 1px solid var(--cor-borda);
+  padding: .5rem 1rem;
+  font-size: .72rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.orc-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F1F5F9;
+  border-bottom: 1px solid var(--cor-borda);
+  padding: .5rem 1rem;
+}
+.orc-section-header .orc-section-titulo {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* Cabeçalho */
+.orc-cabecalho-grid { padding: .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+.orc-cab-row { display: flex; gap: .75rem; flex-wrap: wrap; }
+.orc-cab-field { display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+.orc-cab-sm { flex: 1; min-width: 120px; }
+.orc-cab-md { flex: 2; min-width: 160px; }
+.orc-cab-lg { flex: 3; min-width: 200px; }
+.orc-cab-label {
+  font-size: .65rem;
+  font-weight: 800;
+  color: #94A3B8;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.orc-cab-input {
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: .4rem .6rem;
+  font-size: .85rem;
+  color: var(--cor-texto);
+  background: #FAFAFA;
+  outline: none;
+  width: 100%;
+  transition: border-color .15s, background .15s;
+  font-family: var(--fonte);
+}
+.orc-cab-input:focus { border-color: var(--cor-acento); background: #fff; }
+
+/* Tabela */
+.orc-tabela-wrap { overflow-x: auto; }
+.orc-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+  min-width: 900px;
+}
+.orc-tabela thead tr {
+  background: #F8FAFC;
+}
+.orc-tabela th {
+  padding: .6rem .75rem;
+  text-align: left;
+  font-size: .65rem;
+  font-weight: 800;
+  color: #64748B;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-bottom: 2px solid #E2E8F0;
+  white-space: nowrap;
+}
+.orc-tabela tbody tr { border-bottom: 1px solid #F1F5F9; }
+.orc-tabela tbody tr:hover { background: #FAFBFF; }
+.orc-cell {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: .35rem .5rem;
+  font-size: .82rem;
+  color: var(--cor-texto);
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-family: var(--fonte);
+  transition: border-color .12s, background .12s;
+}
+.orc-cell:focus { border-color: var(--cor-acento); background: #EFF6FF; }
+.orc-num  { width: 60px; text-align: center; }
+.orc-money { width: 90px; text-align: right; }
+.orc-pgto  { width: 60px; text-align: center; }
+.orc-sel {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: .35rem .3rem;
+  font-size: .82rem;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--fonte);
+}
+.orc-sel:focus { border-color: var(--cor-acento); background: #EFF6FF; }
+.orc-total-cell {
+  padding: .35rem .75rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+  white-space: nowrap;
+}
+.orc-del-btn {
+  background: none;
+  border: none;
+  color: #CBD5E1;
+  cursor: pointer;
+  font-size: .9rem;
+  padding: .25rem;
+  border-radius: 4px;
+  transition: color .12s;
+}
+.orc-del-btn:hover { color: var(--cor-erro); }
+.orc-subtotal {
+  padding: .6rem 1rem;
+  text-align: right;
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--cor-texto);
+  background: #F8FAFC;
+  border-top: 2px solid #E2E8F0;
+}
+.orc-subtotal span { color: var(--cor-acento); margin-left: .5rem; }
+
+/* Verba */
+.orc-verba { padding: .75rem 1rem !important; }
+.orc-verba-input {
+  width: 140px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 6px;
+  padding: .4rem .6rem;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  outline: none;
+  font-family: var(--fonte);
+}
+.orc-verba-input:focus { border-color: var(--cor-acento); }
+
+/* Totais */
+.orc-totais { padding: .75rem 1.25rem !important; }
+.orc-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .4rem 0;
+  border-bottom: 1px solid #F1F5F9;
+}
+.orc-total-row:last-child { border-bottom: none; }
+.orc-fator-row { background: #F8FAFC; padding: .4rem .75rem; border-radius: 8px; margin: .25rem 0; }
+.orc-total-label { font-size: .8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .05em; }
+.orc-total-valor { font-size: 1rem; font-weight: 700; color: var(--cor-texto); }
+.orc-total-destaque { font-size: 1.2rem; color: var(--cor-acento); }
+.orc-fator-input {
+  width: 70px;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 6px;
+  padding: .3rem .5rem;
+  font-size: .9rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  font-family: var(--fonte);
+}
+.orc-fator-input:focus { border-color: var(--cor-acento); }
+.orc-produtor-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: .5rem;
+  padding-top: .5rem;
+  border-top: 1px solid #F1F5F9;
+}
+.orc-produtor-nome { font-size: .85rem; font-weight: 700; color: var(--cor-acento); }
