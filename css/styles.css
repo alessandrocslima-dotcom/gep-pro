@@ -1005,3 +1005,27 @@ a { color: var(--cor-acento); text-decoration: none; }
   display: flex;
   align-items: center;
 }
+
+/* ── Autocomplete orçamento ── */
+.orc-sugestoes {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  z-index: 200;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.orc-sug-item {
+  padding: .5rem .75rem;
+  cursor: pointer;
+  font-size: .82rem;
+  border-bottom: 1px solid #F8FAFC;
+  transition: background .1s;
+}
+.orc-sug-item:hover { background: #EFF6FF; }
+.orc-sug-item:last-child { border-bottom: none; }

@@ -3,7 +3,7 @@
    sw.js — Service Worker
    ═══════════════════════════════════════════ */
 
-const VERSAO    = 'gep-v2-002';
+const VERSAO    = 'gep-v2-001';
 const CACHE     = 'gep-cache-' + VERSAO;
 
 const ARQUIVOS = [

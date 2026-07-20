@@ -669,15 +669,25 @@ async function cadAtualizarSeletorCategorias() {
     cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
     const valorAtual = sel.value;
     sel.innerHTML = '<option value="">Selecione...</option>';
-    cats.forEach(c => {
+    cats.filter(c => c.nome && c.nome.trim() && c.nome !== 'undefined').forEach(c => {
       const op = document.createElement('option');
-      op.value = c.nome;
-      op.textContent = c.nome;
-      if (c.nome === valorAtual) op.selected = true;
+      op.value = c.nome.trim();
+      op.textContent = c.nome.trim();
+      if (c.nome.trim() === valorAtual) op.selected = true;
       sel.appendChild(op);
     });
   } catch(e) {}
 }
+
+/* Carregar catálogo para autocomplete nos orçamentos */
+async function cadCarregarCatalogoParaOrc() {
+  try {
+    const items = await GepFirebase.listar('catalogo');
+    items.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    return items;
+  } catch(e) { return []; }
+}
+window.cadCarregarCatalogoParaOrc = cadCarregarCatalogoParaOrc;
 
 window.cadAbrirCategorias       = cadAbrirCategorias;
 window.cadSalvarCategoria       = cadSalvarCategoria;
