@@ -532,6 +532,10 @@ async function orcBuscarServico(input, idx) {
       ${desc ? `<span style="color:#94A3B8;font-size:.78rem"> — ${desc}</span>` : ''}
     </div>`;
   }).join('');
+  // Posicionar abaixo do input
+  const rect = input.getBoundingClientRect();
+  sug.style.top  = (rect.bottom + window.scrollY) + 'px';
+  sug.style.left = (rect.left + window.scrollX) + 'px';
   sug.style.display = 'block';
 }
 
