@@ -1008,17 +1008,16 @@ a { color: var(--cor-acento); text-decoration: none; }
 
 /* ── Autocomplete orçamento ── */
 .orc-sugestoes {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
+  position: fixed;
   background: #fff;
   border: 1px solid var(--cor-borda);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.12);
-  z-index: 200;
-  max-height: 200px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  z-index: 9999;
+  max-height: 220px;
   overflow-y: auto;
+  min-width: 280px;
+  max-width: 420px;
 }
 .orc-sug-item {
   padding: .5rem .75rem;
