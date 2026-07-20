@@ -283,6 +283,8 @@ a { color: var(--cor-acento); text-decoration: none; }
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ── Topbar ── */
@@ -330,6 +332,8 @@ a { color: var(--cor-acento); text-decoration: none; }
 #views {
   flex: 1;
   padding: 1.5rem;
+  overflow-y: auto;
+  min-height: 0;
 }
 .view {
   display: none;
@@ -337,13 +341,27 @@ a { color: var(--cor-acento); text-decoration: none; }
 }
 .view.ativa { display: block; }
 
+/* Quando a planilha está aberta, #views e #vwOrcamentos não têm padding/scroll */
+#views.planilha-aberta {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+#vwOrcamentos.planilha-aberta {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Planilha de orçamento ocupa toda a altura disponível */
 #orcViewPlanilha {
   display: none;
   flex-direction: column;
-  height: calc(100vh - var(--topbar-h));
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
-  margin: -1.5rem;
 }
 #orcViewPlanilha.ativo {
   display: flex;
