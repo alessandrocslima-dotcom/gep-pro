@@ -317,16 +317,12 @@ async function orcAbrirDaVT(vtId) {
 async function orcAbrirPlanilha(id) {
   try {
     // Garantir que o cache de autocomplete esteja carregado
-    if (!orcSecretarias.length || !orcCatalogo.length) {
-      try {
-        const [secs, cats] = await Promise.all([
-          orcSecretarias.length ? Promise.resolve(orcSecretarias) : GepFirebase.listar('secretarias'),
-          orcCatalogo.length    ? Promise.resolve(orcCatalogo)    : GepFirebase.listar('catalogo')
-        ]);
-        if (!orcSecretarias.length) orcSecretarias = secs.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-        if (!orcCatalogo.length)    orcCatalogo    = cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-      } catch(e) { /* silencioso — autocomplete fica indisponível */ }
-    }
+    try {
+      const _promessas = [];
+      if (!orcSecretarias.length) _promessas.push(GepFirebase.listar('secretarias').then(r => { orcSecretarias = r.sort((a,b) => (a.nome||'').localeCompare(b.nome||'')); }));
+      if (!orcCatalogo.length)    _promessas.push(GepFirebase.listar('catalogo').then(r => { orcCatalogo = r.sort((a,b) => (a.nome||'').localeCompare(b.nome||'')); }));
+      if (_promessas.length) await Promise.all(_promessas);
+    } catch(e) { /* silencioso */ }
 
     const orc = await GepFirebase.buscar('orcamentos', id);
     if (!orc) { toast('Orçamento não encontrado.', 'erro'); return; }
