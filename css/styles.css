@@ -853,6 +853,10 @@ a { color: var(--cor-acento); text-decoration: none; }
   text-transform: uppercase;
   border-bottom: 2px solid #E2E8F0;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: #F8FAFC;
+  z-index: 10;
 }
 .orc-tabela tbody tr { border-bottom: 1px solid #F1F5F9; }
 .orc-tabela tbody tr:hover { background: #FAFBFF; }
@@ -1012,12 +1016,12 @@ a { color: var(--cor-acento); text-decoration: none; }
   background: #fff;
   border: 1px solid var(--cor-borda);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  box-shadow: 0 8px 24px rgba(0,0,0,.15);
   z-index: 9999;
   max-height: 220px;
   overflow-y: auto;
   min-width: 280px;
-  max-width: 420px;
+  max-width: 440px;
 }
 .orc-sug-item {
   padding: .5rem .75rem;
