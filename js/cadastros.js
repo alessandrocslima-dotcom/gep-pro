@@ -579,8 +579,8 @@ window.cadExcluirSelecionadasSec = cadExcluirSelecionadasSec;
    CATEGORIAS DO CATÁLOGO
 ══════════════════════════════════════ */
 
-// Categorias padrão (usadas se não houver nenhuma cadastrada)
-const CAT_PADRAO = ['Som','Iluminação','Estrutura','Alimentação','Logística','Produtor','Outros'];
+// Categorias padrão
+const CAT_PADRAO = ['Som','Iluminacao','Estrutura','Alimentacao','Logistica','Produtor','Outros'];
 
 async function cadAbrirCategorias() {
   cadAbrirModal('modalCategorias');
@@ -598,6 +598,7 @@ async function cadCarregarCategorias() {
       cats = await GepFirebase.listar('categorias_catalogo');
     } catch(e) { cats = []; }
     cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    console.log('Categorias carregadas:', JSON.stringify(cats));
 
     // Se não tem nenhuma, criar as padrão
     if (!cats.length) {
@@ -609,7 +610,13 @@ async function cadCarregarCategorias() {
       cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
     }
 
-    lista.innerHTML = cats.map(c => `
+    // Filtrar categorias sem nome válido
+    const catsValidas = cats.filter(c => c.nome && c.nome !== 'undefined');
+    if (!catsValidas.length) {
+      lista.innerHTML = '<p style="color:#94A3B8;font-size:.85rem;text-align:center;padding:1rem">Nenhuma categoria cadastrada.</p>';
+      return;
+    }
+    lista.innerHTML = catsValidas.map(c => `
       <div class="cad-item">
         <div class="cad-item-info">
           <div class="cad-item-nome">● ${c.nome}</div>
