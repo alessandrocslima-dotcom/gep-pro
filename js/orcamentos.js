@@ -628,10 +628,15 @@ function orcSelecionarServico(idx, nome, descricao, periodo) {
 
 // Fechar sugestões ao clicar fora
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('.orc-cell')) {
+  if (!e.target.closest('.orc-cell') && !e.target.closest('.orc-sugestoes')) {
     document.querySelectorAll('.orc-sugestoes').forEach(s => s.style.display = 'none');
   }
 });
+
+// Atualizar posição das sugestões ao rolar
+document.addEventListener('scroll', function() {
+  document.querySelectorAll('.orc-sugestoes').forEach(s => s.style.display = 'none');
+}, true);
 
 /* ══════════════════════════════════════
    ABAS ESTILO EXCEL
@@ -829,17 +834,14 @@ async function ffCarregar() {
       <td style="padding:.5rem .75rem;font-size:.82rem;color:#64748B">${cad.telefone || '—'}</td>
       <td style="padding:.5rem .75rem;font-size:.85rem;font-weight:700;color:#0F172A">R$ ${orcFormatarValor(g.total)}</td>
       <td style="padding:.4rem .5rem">
-        <div style="display:flex;flex-direction:column;gap:.3rem">
-          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;white-space:nowrap">
-            <input type="radio" name="ffPgto${i}" value="faturado" onchange="ffTipoPgto(${i},'faturado','${dataPgto}')"> Faturado
-          </label>
-          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;white-space:nowrap">
-            <input type="radio" name="ffPgto${i}" value="parcial" onchange="ffTipoPgto(${i},'parcial','')"> Parcial
-          </label>
-          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;white-space:nowrap">
-            <input type="radio" name="ffPgto${i}" value="avista" onchange="ffTipoPgto(${i},'avista','')"> À Vista
-          </label>
-        </div>
+        <select class="orc-cell orc-sel" id="ffPgtoSel${i}" 
+                onchange="ffTipoPgto(${i},this.value,'${dataPgto}')"
+                style="width:100%;min-width:100px">
+          <option value="">Selecione...</option>
+          <option value="faturado">Faturado</option>
+          <option value="parcial">Parcial</option>
+          <option value="avista">À Vista</option>
+        </select>
       </td>
       <td style="padding:.4rem .5rem">
         <input class="orc-cell" id="ffData${i}" value="${dataPgto}" placeholder="—" style="width:100px;color:#2563EB;font-weight:600" readonly>
