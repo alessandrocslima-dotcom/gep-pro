@@ -609,13 +609,17 @@ function vtAvancarEtapa2() {
 
 let vtDemandas = [];
 let vtCatalogo = [];
+let _vtCatCache = null;
 let vtEditandoDemanda = null; // índice da demanda sendo editada
 
 async function vtPreencherEtapa3() {
-  // Carregar catálogo
+  // Carregar catálogo com cache
   try {
-    vtCatalogo = await GepFirebase.listar('catalogo');
-    vtCatalogo.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    if (!_vtCatCache || !_vtCatCache.length) {
+      _vtCatCache = await GepFirebase.listar('catalogo');
+      _vtCatCache.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    }
+    vtCatalogo = _vtCatCache;
   } catch(e) { vtCatalogo = []; }
 
   // Preencher demandas se já tiver dados
@@ -645,23 +649,40 @@ function vtRenderizarDemandas() {
 }
 
 function vtBuscarCatalogo() {
-  const termo = document.getElementById('vtBuscaServico').value.toLowerCase().trim();
+  const input    = document.getElementById('vtBuscaServico');
+  const termo    = input.value.toLowerCase().trim();
   const sugestoes = document.getElementById('vtSugestoes');
-  if (!termo || termo.length < 2) { sugestoes.style.display = 'none'; return; }
+  if (!termo || termo.length < 1) { sugestoes.style.display = 'none'; return; }
 
   const filtrados = vtCatalogo.filter(c => (c.nome||'').toLowerCase().includes(termo)).slice(0, 8);
   if (!filtrados.length) { sugestoes.style.display = 'none'; return; }
 
-  sugestoes.innerHTML = filtrados.map(c => `
-    <div onclick="vtSelecionarServico('${c.nome}')"
-         style="padding:.6rem 1rem;cursor:pointer;font-size:.875rem;border-bottom:1px solid #F1F5F9;hover:background:#F8FAFC">
-      ${c.nome}
-    </div>`).join('');
-  sugestoes.style.display = 'block';
+  sugestoes.innerHTML = filtrados.map(c => {
+    const desc = c.descricaoPadrao || c.descricacaoPadrao || '';
+    const per  = c.periodoPadrao || 'Unid';
+    const nomeEsc = (c.nome||'').replace(/'/g,"\'");
+    const descEsc = desc.replace(/'/g,"\'");
+    return `<div onclick="vtSelecionarServico('${nomeEsc}','${descEsc}','${per}')"
+         style="padding:.6rem 1rem;cursor:pointer;font-size:.875rem;border-bottom:1px solid #F1F5F9">
+      <span style="font-weight:600">${c.nome}</span>
+      ${desc ? `<span style="color:#94A3B8;font-size:.78rem"> — ${desc}</span>` : ''}
+    </div>`;
+  }).join('');
+
+  // Posicionar abaixo do input
+  const rect = input.getBoundingClientRect();
+  sugestoes.style.position = 'fixed';
+  sugestoes.style.top  = (rect.bottom + window.scrollY) + 'px';
+  sugestoes.style.left = (rect.left  + window.scrollX) + 'px';
+  sugestoes.style.minWidth = '280px';
+  sugestoes.style.zIndex   = '9999';
+  sugestoes.style.display  = 'block';
 }
 
-function vtSelecionarServico(nome) {
-  document.getElementById('vtBuscaServico').value = nome;
+function vtSelecionarServico(nome, descricao, periodo) {
+  document.getElementById('vtBuscaServico').value  = nome;
+  if (descricao) document.getElementById('vtDescServico').value = descricao;
+  if (periodo)   document.getElementById('vtPeriodoServico').value = periodo;
   document.getElementById('vtSugestoes').style.display = 'none';
 }
 
@@ -875,6 +896,7 @@ window.vtAbrirWazeRisco   = vtAbrirWazeRisco;
 window.vtAbrirMapsRisco   = vtAbrirMapsRisco;
 window.vtBuscarCatalogo   = vtBuscarCatalogo;
 window.vtSelecionarServico = vtSelecionarServico;
+window.vtBuscarCatalogo   = vtBuscarCatalogo;
 window.vtAdicionarDemanda = vtAdicionarDemanda;
 window.vtRemoverDemanda   = vtRemoverDemanda;
 window.vtEditarDemanda    = vtEditarDemanda;
