@@ -8,7 +8,8 @@
 ══════════════════════════════════════ */
 
 let _catalogoCache   = null; // cache do catálogo
-let _secretariasCache = null; // cache das secretarias
+let _secretariasCache  = null; // cache das secretarias
+let _fornecedoresCache = null; // cache dos fornecedores
 
 let orcVtId      = null;   // ID da VT vinculada
 let orcId        = null;   // ID do orçamento
@@ -349,8 +350,10 @@ async function orcAbrirPlanilha(id) {
     fchLinhas   = [];
     _catalogoCache    = null;
     _secretariasCache = null;
+    _fornecedoresCache = null;
     orcCarregarCatalogo();
     orcCarregarSecretarias();
+    orcCarregarFornecedores();
     orcIrAba('inicial');
     // Renderizar tabela
     orcRenderizarTabela();
@@ -393,7 +396,13 @@ function orcRenderizarTabela() {
         </select>
       </td>
       <td class="orc-total-cell" id="orcTotal${i}">R$ ${orcFormatarValor(l.valorFinal||0)}</td>
-      <td><input class="orc-cell" value="${l.fornecedor||''}" onchange="orcUpdateLinha(${i},'fornecedor',this.value)" placeholder="Fornecedor"></td>
+      <td style="position:relative">
+        <input class="orc-cell" value="${l.fornecedor||''}"
+               oninput="orcBuscarFornecedor(this,${i})"
+               onchange="orcUpdateLinha(${i},'fornecedor',this.value)"
+               placeholder="Fornecedor" autocomplete="off">
+        <div id="orcSugForn${i}" class="orc-sugestoes" style="display:none"></div>
+      </td>
       <td><input class="orc-cell orc-pgto" value="${l.formaPgto||''}" onchange="orcUpdateLinha(${i},'formaPgto',this.value)" placeholder="30D"></td>
       <td><input class="orc-cell" value="${l.obs||''}" onchange="orcUpdateLinha(${i},'obs',this.value)" placeholder="—"></td>
       <td><button class="orc-del-btn" onclick="orcRemoverLinha(${i})" title="Remover">✕</button></td>
@@ -538,6 +547,15 @@ async function orcCarregarSecretarias() {
     _secretariasCache = [];
   }
   return _secretariasCache;
+}
+
+async function orcCarregarFornecedores() {
+  if (_fornecedoresCache && _fornecedoresCache.length) return _fornecedoresCache;
+  try {
+    _fornecedoresCache = await GepFirebase.listar('fornecedores');
+    _fornecedoresCache.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+  } catch(e) { _fornecedoresCache = []; }
+  return _fornecedoresCache;
 }
 
 async function orcCarregarCatalogo() {
@@ -847,8 +865,52 @@ window.orcUpdateLinha    = orcUpdateLinha;
 window.orcRecalcularLinha = orcRecalcularLinha;
 window.orcAtualizarTotais = orcAtualizarTotais;
 window.orcSalvar         = orcSalvar;
+async function orcBuscarFornecedor(input, idx) {
+  const termo = input.value.toLowerCase().trim();
+  const sugId = 'orcSugForn' + idx;
+  const sug   = document.getElementById(sugId);
+  if (!sug) return;
+
+  if (termo.length < 1) { sug.style.display = 'none'; return; }
+
+  const forns = _fornecedoresCache || await orcCarregarFornecedores();
+  const filtrados = forns.filter(f => (f.nome||'').toLowerCase().includes(termo)).slice(0, 8);
+
+  if (!filtrados.length) { sug.style.display = 'none'; return; }
+
+  sug.innerHTML = filtrados.map(f => `
+    <div class="orc-sug-item" onclick="orcSelecionarFornecedor(${idx},'${(f.nome||'').replace(/'/g,"\'")}','${(f.prazoPg||'').replace(/'/g,"\'")}')">
+      <span style="font-weight:600">${f.nome}</span>
+      ${f.prazoPg ? `<span style="color:#94A3B8;font-size:.78rem"> — ${f.prazoPg}</span>` : ''}
+      ${f.tipoServico ? `<span style="background:#DBEAFE;color:#1D4ED8;font-size:.7rem;padding:.1rem .4rem;border-radius:4px;margin-left:.25rem">${f.tipoServico}</span>` : ''}
+    </div>`).join('');
+
+  const rect = input.getBoundingClientRect();
+  sug.style.top  = (rect.bottom + window.scrollY) + 'px';
+  sug.style.left = (rect.left  + window.scrollX) + 'px';
+  sug.style.display = 'block';
+}
+
+function orcSelecionarFornecedor(idx, nome, prazo) {
+  orcUpdateLinha(idx, 'fornecedor', nome);
+  orcUpdateLinha(idx, 'formaPgto',  prazo);
+
+  const row = document.querySelector('#orcTbody tr[data-idx="' + idx + '"]');
+  if (row) {
+    const inputs = row.querySelectorAll('input');
+    // fornecedor é o 7º input (índice 6), formaPgto é o 8º (índice 7)
+    if (inputs[6]) inputs[6].value = nome;
+    if (inputs[7]) inputs[7].value = prazo;
+  }
+
+  const sug = document.getElementById('orcSugForn' + idx);
+  if (sug) sug.style.display = 'none';
+}
+
 window.orcBuscarServico     = orcBuscarServico;
-window.orcBuscarSecretaria  = orcBuscarSecretaria;
+window.orcBuscarSecretaria   = orcBuscarSecretaria;
+window.orcBuscarFornecedor   = orcBuscarFornecedor;
+window.orcSelecionarFornecedor = orcSelecionarFornecedor;
 window.orcSelecionarSecretaria = orcSelecionarSecretaria;
 window.orcSelecionarServico = orcSelecionarServico;
 window.orcWACotacao       = orcWACotacao;
