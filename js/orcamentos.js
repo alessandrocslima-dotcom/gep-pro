@@ -7,7 +7,8 @@
    ESTADO
 ══════════════════════════════════════ */
 
-let _catalogoCache = null; // cache do catálogo para autocomplete
+let _catalogoCache   = null; // cache do catálogo
+let _secretariasCache = null; // cache das secretarias
 
 let orcVtId      = null;   // ID da VT vinculada
 let orcId        = null;   // ID do orçamento
@@ -346,8 +347,10 @@ async function orcAbrirPlanilha(id) {
     // Resetar para aba inicial
     orcAbaAtual = 'inicial';
     fchLinhas   = [];
-    _catalogoCache = null; // resetar cache
-    orcCarregarCatalogo(); // pré-carregar catálogo
+    _catalogoCache    = null;
+    _secretariasCache = null;
+    orcCarregarCatalogo();
+    orcCarregarSecretarias();
     orcIrAba('inicial');
     // Renderizar tabela
     orcRenderizarTabela();
@@ -490,8 +493,52 @@ async function orcSalvar() {
 }
 
 /* ══════════════════════════════════════
-   AUTOCOMPLETE DO CATÁLOGO
+   AUTOCOMPLETE DO CATÁLOGO E SECRETARIAS
 ══════════════════════════════════════ */
+
+async function orcBuscarSecretaria(input) {
+  const termo = input.value.toLowerCase().trim();
+  const sug   = document.getElementById('orcSugCliente');
+  if (!sug) return;
+
+  if (termo.length < 1) { sug.style.display = 'none'; return; }
+
+  const secs = _secretariasCache || await orcCarregarSecretarias();
+  const filtradas = secs.filter(s => (s.nome||'').toLowerCase().includes(termo) || (s.sigla||'').toLowerCase().includes(termo)).slice(0, 8);
+
+  if (!filtradas.length) { sug.style.display = 'none'; return; }
+
+  sug.innerHTML = filtradas.map(s => `
+    <div class="orc-sug-item" onclick="orcSelecionarSecretaria('${(s.nome||'').replace(/'/g,"\'")}')">
+      <span style="font-weight:600">${s.nome}</span>
+      ${s.sigla ? `<span style="color:#94A3B8;font-size:.78rem"> (${s.sigla})</span>` : ''}
+    </div>`).join('');
+
+  const rect = input.getBoundingClientRect();
+  sug.style.top  = (rect.bottom + window.scrollY) + 'px';
+  sug.style.left = (rect.left + window.scrollX) + 'px';
+  sug.style.display = 'block';
+}
+
+function orcSelecionarSecretaria(nome) {
+  const input = document.getElementById('orcCliente');
+  if (input) input.value = nome;
+  const sug = document.getElementById('orcSugCliente');
+  if (sug) sug.style.display = 'none';
+}
+
+async function orcCarregarSecretarias() {
+  if (_secretariasCache && _secretariasCache.length) return _secretariasCache;
+  try {
+    _secretariasCache = await GepFirebase.listar('secretarias');
+    _secretariasCache.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    console.log('Secretarias carregadas:', _secretariasCache.length, 'itens');
+  } catch(e) {
+    console.error('Erro ao carregar secretarias:', e);
+    _secretariasCache = [];
+  }
+  return _secretariasCache;
+}
 
 async function orcCarregarCatalogo() {
   if (_catalogoCache && _catalogoCache.length) return _catalogoCache;
@@ -800,7 +847,9 @@ window.orcUpdateLinha    = orcUpdateLinha;
 window.orcRecalcularLinha = orcRecalcularLinha;
 window.orcAtualizarTotais = orcAtualizarTotais;
 window.orcSalvar         = orcSalvar;
-window.orcBuscarServico   = orcBuscarServico;
+window.orcBuscarServico     = orcBuscarServico;
+window.orcBuscarSecretaria  = orcBuscarSecretaria;
+window.orcSelecionarSecretaria = orcSelecionarSecretaria;
 window.orcSelecionarServico = orcSelecionarServico;
 window.orcWACotacao       = orcWACotacao;
 window.orcNovoAvulso      = orcNovoAvulso;
