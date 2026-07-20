@@ -223,26 +223,27 @@ async function cadCarregarCatalogo() {
   }
 }
 
-function cadNovoCatalogo() {
+async function cadNovoCatalogo() {
   ['cadCatId','cadCatNome','cadCatDesc'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
   document.getElementById('cadCatCategoria').value = '';
   document.getElementById('cadCatPeriodo').value   = 'Unid';
+  await cadAtualizarSeletorCategorias();
   cadAbrirModal('modalCatalogo');
 }
 
-function cadEditarCatalogo(id) {
-  GepFirebase.buscar('catalogo', id).then(c => {
-    if (!c) return;
-    document.getElementById('cadCatId').value        = c.id;
-    document.getElementById('cadCatNome').value      = c.nome || '';
-    document.getElementById('cadCatCategoria').value = c.categoria || '';
-    document.getElementById('cadCatDesc').value      = c.descricaoPadrao || '';
-    document.getElementById('cadCatPeriodo').value   = c.periodoPadrao || 'Unid';
-    cadAbrirModal('modalCatalogo');
-  });
+async function cadEditarCatalogo(id) {
+  const c = await GepFirebase.buscar('catalogo', id);
+  if (!c) return;
+  document.getElementById('cadCatId').value        = c.id;
+  document.getElementById('cadCatNome').value      = c.nome || '';
+  document.getElementById('cadCatDesc').value      = c.descricaoPadrao || '';
+  document.getElementById('cadCatPeriodo').value   = c.periodoPadrao || 'Unid';
+  await cadAtualizarSeletorCategorias();
+  document.getElementById('cadCatCategoria').value = c.categoria || '';
+  cadAbrirModal('modalCatalogo');
 }
 
 async function cadSalvarCatalogo() {
@@ -573,3 +574,102 @@ window.cadExcluirSelecionadosForn = cadExcluirSelecionadosForn;
 window.cadAtualizarBtnSec       = cadAtualizarBtnSec;
 window.cadSelecionarTodosSec    = cadSelecionarTodosSec;
 window.cadExcluirSelecionadasSec = cadExcluirSelecionadasSec;
+
+/* ══════════════════════════════════════
+   CATEGORIAS DO CATÁLOGO
+══════════════════════════════════════ */
+
+// Categorias padrão (usadas se não houver nenhuma cadastrada)
+const CAT_PADRAO = ['Som','Iluminação','Estrutura','Alimentação','Logística','Produtor','Outros'];
+
+async function cadAbrirCategorias() {
+  cadAbrirModal('modalCategorias');
+  await cadCarregarCategorias();
+}
+
+async function cadCarregarCategorias() {
+  const lista = document.getElementById('cadListaCategorias');
+  if (!lista) return;
+  lista.innerHTML = '<p style="color:#94A3B8;font-size:.85rem">Carregando...</p>';
+
+  try {
+    let cats = await GepFirebase.listar('categorias_catalogo');
+    cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+
+    // Se não tem nenhuma, criar as padrão
+    if (!cats.length) {
+      for (const nome of CAT_PADRAO) {
+        const id = GepUtils.gerarId('cat');
+        await GepFirebase.salvar('categorias_catalogo', id, { nome });
+      }
+      cats = await GepFirebase.listar('categorias_catalogo');
+      cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    }
+
+    lista.innerHTML = cats.map(c => `
+      <div class="cad-item">
+        <div class="cad-item-info">
+          <div class="cad-item-nome">● ${c.nome}</div>
+        </div>
+        <div class="cad-item-acoes">
+          <button class="btn btn-perigo btn-sm" onclick="cadExcluirCategoria('${c.id}')">🗑</button>
+        </div>
+      </div>`).join('');
+
+    // Atualizar seletor no modal do catálogo
+    await cadAtualizarSeletorCategorias();
+
+  } catch(e) {
+    lista.innerHTML = '<p style="color:#DC2626;font-size:.85rem">Erro ao carregar.</p>';
+  }
+}
+
+async function cadSalvarCategoria() {
+  const input = document.getElementById('cadCatNovaCat');
+  const nome  = input?.value.trim();
+  if (!nome) { toast('Digite o nome da categoria.', 'erro'); return; }
+
+  try {
+    const existentes = await GepFirebase.listar('categorias_catalogo');
+    const jaExiste = existentes.some(c => c.nome?.toLowerCase() === nome.toLowerCase());
+    if (jaExiste) { toast('Categoria já existe.', 'erro'); return; }
+
+    const id = GepUtils.gerarId('catg');
+    await GepFirebase.salvar('categorias_catalogo', id, { nome });
+    if (input) input.value = '';
+    toast('Categoria adicionada!', 'ok');
+    await cadCarregarCategorias();
+  } catch(e) { toast('Erro ao salvar.', 'erro'); }
+}
+
+async function cadExcluirCategoria(id) {
+  if (!GepUtils.confirmar('Excluir esta categoria?')) return;
+  try {
+    await GepFirebase.excluir('categorias_catalogo', id);
+    toast('Categoria excluída.', 'ok');
+    await cadCarregarCategorias();
+  } catch(e) { toast('Erro ao excluir.', 'erro'); }
+}
+
+async function cadAtualizarSeletorCategorias() {
+  const sel = document.getElementById('cadCatCategoria');
+  if (!sel) return;
+  try {
+    const cats = await GepFirebase.listar('categorias_catalogo');
+    cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    const valorAtual = sel.value;
+    sel.innerHTML = '<option value="">Selecione...</option>';
+    cats.forEach(c => {
+      const op = document.createElement('option');
+      op.value = c.nome;
+      op.textContent = c.nome;
+      if (c.nome === valorAtual) op.selected = true;
+      sel.appendChild(op);
+    });
+  } catch(e) {}
+}
+
+window.cadAbrirCategorias       = cadAbrirCategorias;
+window.cadSalvarCategoria       = cadSalvarCategoria;
+window.cadExcluirCategoria      = cadExcluirCategoria;
+window.cadAtualizarSeletorCategorias = cadAtualizarSeletorCategorias;
