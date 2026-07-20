@@ -593,7 +593,10 @@ async function cadCarregarCategorias() {
   lista.innerHTML = '<p style="color:#94A3B8;font-size:.85rem">Carregando...</p>';
 
   try {
-    let cats = await GepFirebase.listar('categorias_catalogo');
+    let cats = [];
+    try {
+      cats = await GepFirebase.listar('categorias_catalogo');
+    } catch(e) { cats = []; }
     cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
 
     // Se não tem nenhuma, criar as padrão
@@ -602,7 +605,7 @@ async function cadCarregarCategorias() {
         const id = GepUtils.gerarId('cat');
         await GepFirebase.salvar('categorias_catalogo', id, { nome });
       }
-      cats = await GepFirebase.listar('categorias_catalogo');
+      try { cats = await GepFirebase.listar('categorias_catalogo'); } catch(e) { cats = []; }
       cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
     }
 
