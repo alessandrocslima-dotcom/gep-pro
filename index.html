@@ -502,7 +502,11 @@
                 </div>
                 <div class="orc-cab-field orc-cab-md">
                   <div class="orc-cab-label">CLIENTE</div>
-                  <input class="orc-cab-input" id="orcCliente" placeholder="Secretaria ou cliente">
+                  <div style="position:relative">
+                  <input class="orc-cab-input" id="orcCliente" placeholder="Secretaria ou cliente"
+                         oninput="orcBuscarSecretaria(this)" autocomplete="off">
+                  <div id="orcSugCliente" class="orc-sugestoes" style="display:none"></div>
+                </div>
                 </div>
                 <div class="orc-cab-field orc-cab-lg">
                   <div class="orc-cab-label">NOME DO EVENTO</div>
