@@ -360,7 +360,7 @@ async function orcAbrirPlanilha(id) {
 
     // Mostrar planilha, esconder lista
     document.getElementById('orcViewLista').style.display = 'none';
-    document.getElementById('orcViewPlanilha').style.display = 'block';
+    document.getElementById('orcViewPlanilha').style.display = 'flex';
 
   } catch(e) {
     console.error(e);
