@@ -397,13 +397,13 @@ function orcRenderizarTabela() {
       </td>
       <td class="orc-total-cell" id="orcTotal${i}">R$ ${orcFormatarValor(l.valorFinal||0)}</td>
       <td style="position:relative">
-        <input class="orc-cell" value="${l.fornecedor||''}"
+        <input class="orc-cell" id="orcForn${i}" value="${l.fornecedor||''}"
                oninput="orcBuscarFornecedor(this,${i})"
                onchange="orcUpdateLinha(${i},'fornecedor',this.value)"
                placeholder="Fornecedor" autocomplete="off">
         <div id="orcSugForn${i}" class="orc-sugestoes" style="display:none"></div>
       </td>
-      <td><input class="orc-cell orc-pgto" value="${l.formaPgto||''}" onchange="orcUpdateLinha(${i},'formaPgto',this.value)" placeholder="30D"></td>
+      <td><input class="orc-cell orc-pgto" id="orcPgto${i}" value="${l.formaPgto||''}" onchange="orcUpdateLinha(${i},'formaPgto',this.value)" placeholder="30D"></td>
       <td><input class="orc-cell" value="${l.obs||''}" onchange="orcUpdateLinha(${i},'obs',this.value)" placeholder="—"></td>
       <td><button class="orc-del-btn" onclick="orcRemoverLinha(${i})" title="Remover">✕</button></td>
     </tr>`).join('');
@@ -818,8 +818,9 @@ async function ffCarregar() {
   let totalGeral = 0;
 
   tbody.innerHTML = linhas.map((g, i) => {
-    const cad = fornsCad.find(f => f.nome?.toLowerCase() === g.nome.toLowerCase()) || {};
-    const dataPgto = calcDataPgto(dataEvento, cad.prazoPg || g.formaPgto || '');
+    const cad      = fornsCad.find(f => f.nome?.toLowerCase() === g.nome.toLowerCase()) || {};
+    const prazo    = cad.prazoPg || g.formaPgto || '';
+    const dataPgto = calcDataPgto(dataEvento, prazo);
     totalGeral += g.total;
     return `<tr>
       <td style="padding:.5rem .75rem;font-size:.85rem;font-weight:600;color:#0F172A">${g.nome}</td>
@@ -827,14 +828,58 @@ async function ffCarregar() {
       <td style="padding:.5rem .75rem;font-size:.82rem;color:#64748B">${cad.responsavel || '—'}</td>
       <td style="padding:.5rem .75rem;font-size:.82rem;color:#64748B">${cad.telefone || '—'}</td>
       <td style="padding:.5rem .75rem;font-size:.85rem;font-weight:700;color:#0F172A">R$ ${orcFormatarValor(g.total)}</td>
-      <td style="padding:.5rem .75rem;font-size:.82rem;color:#2563EB;font-weight:600">${dataPgto}</td>
-      <td><input class="orc-cell" placeholder="Observações" style="width:100%"></td>
+      <td style="padding:.4rem .5rem">
+        <div style="display:flex;flex-direction:column;gap:.3rem">
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;white-space:nowrap">
+            <input type="radio" name="ffPgto${i}" value="faturado" onchange="ffTipoPgto(${i},'faturado','${dataPgto}')"> Faturado
+          </label>
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;white-space:nowrap">
+            <input type="radio" name="ffPgto${i}" value="parcial" onchange="ffTipoPgto(${i},'parcial','')"> Parcial
+          </label>
+          <label style="display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;white-space:nowrap">
+            <input type="radio" name="ffPgto${i}" value="avista" onchange="ffTipoPgto(${i},'avista','')"> À Vista
+          </label>
+        </div>
+      </td>
+      <td style="padding:.4rem .5rem">
+        <input class="orc-cell" id="ffData${i}" value="${dataPgto}" placeholder="—" style="width:100px;color:#2563EB;font-weight:600" readonly>
+      </td>
+      <td style="padding:.4rem .5rem">
+        <input class="orc-cell" id="ffObs${i}" placeholder="Observações" style="width:100%">
+      </td>
     </tr>`;
   }).join('');
 
   // Total
   const totalEl = document.getElementById('ffTotal');
   if (totalEl) totalEl.textContent = 'R$ ' + orcFormatarValor(totalGeral);
+}
+
+/* ══════════════════════════════════════
+   FECHAMENTO FORNECEDORES — TIPO PAGAMENTO
+══════════════════════════════════════ */
+
+function ffTipoPgto(idx, tipo, dataPgto) {
+  const dataEl = document.getElementById('ffData' + idx);
+  const obsEl  = document.getElementById('ffObs'  + idx);
+
+  if (tipo === 'faturado') {
+    if (dataEl) { dataEl.value = dataPgto || '—'; dataEl.readOnly = true; }
+    if (obsEl && !obsEl.value) obsEl.value = '';
+  } else if (tipo === 'parcial') {
+    if (dataEl) { dataEl.value = ''; dataEl.readOnly = true; }
+    if (obsEl) {
+      obsEl.value = 'Pagamento parcial — ';
+      obsEl.readOnly = false;
+      setTimeout(() => { obsEl.focus(); obsEl.setSelectionRange(obsEl.value.length, obsEl.value.length); }, 50);
+    }
+  } else if (tipo === 'avista') {
+    if (dataEl) { dataEl.value = ''; dataEl.readOnly = true; }
+    if (obsEl) {
+      obsEl.value = 'Pagamento à vista';
+      obsEl.readOnly = false;
+    }
+  }
 }
 
 /* ══════════════════════════════════════
@@ -895,13 +940,10 @@ function orcSelecionarFornecedor(idx, nome, prazo) {
   orcUpdateLinha(idx, 'fornecedor', nome);
   orcUpdateLinha(idx, 'formaPgto',  prazo);
 
-  const row = document.querySelector('#orcTbody tr[data-idx="' + idx + '"]');
-  if (row) {
-    const inputs = row.querySelectorAll('input');
-    // fornecedor é o 7º input (índice 6), formaPgto é o 8º (índice 7)
-    if (inputs[6]) inputs[6].value = nome;
-    if (inputs[7]) inputs[7].value = prazo;
-  }
+  const forn = document.getElementById('orcForn' + idx);
+  const pgto = document.getElementById('orcPgto' + idx);
+  if (forn) forn.value = nome;
+  if (pgto) pgto.value = prazo;
 
   const sug = document.getElementById('orcSugForn' + idx);
   if (sug) sug.style.display = 'none';
@@ -917,3 +959,4 @@ window.orcWACotacao       = orcWACotacao;
 window.orcNovoAvulso      = orcNovoAvulso;
 window.orcCriarAvulso     = orcCriarAvulso;
 window.orcExcluir         = orcExcluir;
+window.ffTipoPgto         = ffTipoPgto;
