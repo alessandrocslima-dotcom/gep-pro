@@ -858,7 +858,10 @@
       <div class="view" id="vwCatalogo">
         <div class="pg-titulo" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
           <div><h1>📦 Catálogo</h1><p>Catálogo de serviços e equipamentos</p></div>
-          <button class="btn btn-primario" onclick="cadNovoCatalogo()">+ Novo Item</button>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-primario" onclick="cadNovoCatalogo()">+ Novo Item</button>
+            <button class="btn btn-secundario" onclick="cadAbrirCategorias()">⚙️ Categorias</button>
+          </div>
         </div>
         <div id="cadCatLista"></div>
       </div>
