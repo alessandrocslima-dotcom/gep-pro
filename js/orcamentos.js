@@ -524,8 +524,9 @@ async function orcBuscarSecretaria(input) {
     </div>`).join('');
 
   const rect = input.getBoundingClientRect();
-  sug.style.top  = (rect.bottom + window.scrollY) + 'px';
-  sug.style.left = (rect.left + window.scrollX) + 'px';
+  const left3 = Math.min(rect.left, window.innerWidth - 450);
+  sug.style.top     = rect.bottom + 'px';
+  sug.style.left    = Math.max(0, left3) + 'px';
   sug.style.display = 'block';
 }
 
@@ -599,8 +600,10 @@ async function orcBuscarServico(input, idx) {
   }).join('');
   // Posicionar abaixo do input
   const rect = input.getBoundingClientRect();
-  sug.style.top  = (rect.bottom + window.scrollY) + 'px';
-  sug.style.left = (rect.left + window.scrollX) + 'px';
+  // Verificar se vai sair da tela pela direita
+  const left = Math.min(rect.left, window.innerWidth - 450);
+  sug.style.top     = rect.bottom + 'px';
+  sug.style.left    = Math.max(0, left) + 'px';
   sug.style.display = 'block';
 }
 
@@ -866,21 +869,29 @@ function ffTipoPgto(idx, tipo, dataPgto) {
   const obsEl  = document.getElementById('ffObs'  + idx);
 
   if (tipo === 'faturado') {
-    if (dataEl) { dataEl.value = dataPgto || '—'; dataEl.readOnly = true; }
-    if (obsEl && !obsEl.value) obsEl.value = '';
+    // Calcular data se não vier pronta
+    let dt = dataPgto;
+    if (!dt || dt === '—') {
+      // Tentar recalcular com data do evento
+      const dataEvento = document.getElementById('orcDataInicio')?.value || '';
+      const prazo = '30'; // fallback
+      if (dataEvento) {
+        const d = new Date(dataEvento + 'T00:00:00');
+        d.setDate(d.getDate() + parseInt(prazo));
+        dt = d.toLocaleDateString('pt-BR');
+      }
+    }
+    if (dataEl) { dataEl.value = dt || '—'; dataEl.style.color = '#2563EB'; }
+    if (obsEl) obsEl.value = '';
   } else if (tipo === 'parcial') {
-    if (dataEl) { dataEl.value = ''; dataEl.readOnly = true; }
+    if (dataEl) { dataEl.value = ''; dataEl.style.color = ''; }
     if (obsEl) {
       obsEl.value = 'Pagamento parcial — ';
-      obsEl.readOnly = false;
       setTimeout(() => { obsEl.focus(); obsEl.setSelectionRange(obsEl.value.length, obsEl.value.length); }, 50);
     }
   } else if (tipo === 'avista') {
-    if (dataEl) { dataEl.value = ''; dataEl.readOnly = true; }
-    if (obsEl) {
-      obsEl.value = 'Pagamento à vista';
-      obsEl.readOnly = false;
-    }
+    if (dataEl) { dataEl.value = ''; dataEl.style.color = ''; }
+    if (obsEl) obsEl.value = 'Pagamento à vista';
   }
 }
 
@@ -933,8 +944,9 @@ async function orcBuscarFornecedor(input, idx) {
     </div>`).join('');
 
   const rect = input.getBoundingClientRect();
-  sug.style.top  = (rect.bottom + window.scrollY) + 'px';
-  sug.style.left = (rect.left  + window.scrollX) + 'px';
+  const left2 = Math.min(rect.left, window.innerWidth - 450);
+  sug.style.top     = rect.bottom + 'px';
+  sug.style.left    = Math.max(0, left2) + 'px';
   sug.style.display = 'block';
 }
 
