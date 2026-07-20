@@ -833,7 +833,12 @@ a { color: var(--cor-acento); text-decoration: none; }
 .orc-cab-input:focus { border-color: var(--cor-acento); background: #fff; }
 
 /* Tabela */
-.orc-tabela-wrap { overflow-x: auto; }
+.orc-tabela-wrap {
+  overflow: auto;
+  max-height: 400px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+}
 .orc-tabela {
   width: 100%;
   border-collapse: collapse;
