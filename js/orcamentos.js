@@ -346,6 +346,8 @@ async function orcAbrirPlanilha(id) {
     // Resetar para aba inicial
     orcAbaAtual = 'inicial';
     fchLinhas   = [];
+    _catalogoCache = null; // resetar cache
+    orcCarregarCatalogo(); // pré-carregar catálogo
     orcIrAba('inicial');
     // Renderizar tabela
     orcRenderizarTabela();
@@ -492,11 +494,16 @@ async function orcSalvar() {
 ══════════════════════════════════════ */
 
 async function orcCarregarCatalogo() {
-  if (_catalogoCache) return _catalogoCache;
+  if (_catalogoCache && _catalogoCache.length) return _catalogoCache;
   try {
-    _catalogoCache = await GepFirebase.listar('catalogo');
+    const items = await GepFirebase.listar('catalogo');
+    _catalogoCache = items.filter(c => c.nome && c.nome.trim());
     _catalogoCache.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
-  } catch(e) { _catalogoCache = []; }
+    console.log('Catálogo carregado:', _catalogoCache.length, 'itens');
+  } catch(e) {
+    console.error('Erro ao carregar catálogo:', e);
+    _catalogoCache = [];
+  }
   return _catalogoCache;
 }
 
@@ -507,18 +514,24 @@ async function orcBuscarServico(input, idx) {
 
   orcUpdateLinha(idx, 'servico', input.value);
 
-  if (termo.length < 2) { sug.style.display = 'none'; return; }
+  if (termo.length < 1) { sug.style.display = 'none'; return; }
 
-  const cat = await orcCarregarCatalogo();
+  // Usar cache — não faz nova query ao Firebase
+  const cat = _catalogoCache || await orcCarregarCatalogo();
   const filtrados = cat.filter(c => (c.nome||'').toLowerCase().includes(termo)).slice(0, 6);
 
   if (!filtrados.length) { sug.style.display = 'none'; return; }
 
-  sug.innerHTML = filtrados.map(c => `
-    <div class="orc-sug-item" onclick="orcSelecionarServico(${idx},'${c.nome.replace(/'/g,"\'")}','${(c.descricaoPadrao||'').replace(/'/g,"\'")}','${c.periodoPadrao||'Unid'}')">
+  sug.innerHTML = filtrados.map(c => {
+    const desc = c.descricaoPadrao || c.descricacaoPadrao || '';
+    const per  = c.periodoPadrao || 'Unid';
+    const nomeEsc = (c.nome||'').replace(/'/g,"\'");
+    const descEsc = desc.replace(/'/g,"\'");
+    return `<div class="orc-sug-item" onclick="orcSelecionarServico(${idx},'${nomeEsc}','${descEsc}','${per}')">
       <span style="font-weight:600">${c.nome}</span>
-      ${c.descricaoPadrao ? `<span style="color:#94A3B8;font-size:.78rem"> — ${c.descricaoPadrao}</span>` : ''}
-    </div>`).join('');
+      ${desc ? `<span style="color:#94A3B8;font-size:.78rem"> — ${desc}</span>` : ''}
+    </div>`;
+  }).join('');
   sug.style.display = 'block';
 }
 
