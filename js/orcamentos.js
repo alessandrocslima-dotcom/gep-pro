@@ -11,13 +11,27 @@ let orcVtId      = null;   // ID da VT vinculada
 let orcId        = null;   // ID do orçamento
 let orcLinhas    = [];     // linhas da tabela de serviços
 let orcVtDados   = {};     // dados da VT
+let orcSecretarias = [];   // cache de secretarias para autocomplete
+let orcCatalogo    = [];   // cache do catálogo para autocomplete
 
 /* ══════════════════════════════════════
    INICIALIZAÇÃO
 ══════════════════════════════════════ */
 
-function orcInicializar() {
+async function orcInicializar() {
   orcRenderizarLista();
+  // Pré-carregar dados para autocomplete
+  try {
+    const [secs, cats] = await Promise.all([
+      GepFirebase.listar('secretarias'),
+      GepFirebase.listar('catalogo')
+    ]);
+    orcSecretarias = secs.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    orcCatalogo    = cats.sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+  } catch(e) {
+    orcSecretarias = [];
+    orcCatalogo    = [];
+  }
 }
 
 GepNav.registrarCallback('orcamentos', orcInicializar);
@@ -368,8 +382,16 @@ function orcRenderizarTabela() {
 
   tbody.innerHTML = orcLinhas.map((l, i) => `
     <tr class="orc-linha" data-idx="${i}">
-      <td><input class="orc-cell" value="${l.servico||''}" onchange="orcUpdateLinha(${i},'servico',this.value)" placeholder="Serviço"></td>
-      <td><input class="orc-cell" value="${l.descricao||''}" onchange="orcUpdateLinha(${i},'descricao',this.value)" placeholder="Descrição"></td>
+      <td style="position:relative">
+        <input id="orcServico_${i}" class="orc-cell" value="${(l.servico||'').replace(/"/g,'&quot;')}"
+               oninput="orcUpdateLinha(${i},'servico',this.value);orcBuscarCatalogo(${i})"
+               onchange="orcUpdateLinha(${i},'servico',this.value)"
+               onblur="orcFecharAutoCatalogo(${i})"
+               placeholder="Serviço">
+        <div id="orcCatSugestoes_${i}"
+             style="display:none;position:absolute;top:100%;left:0;min-width:220px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:200;max-height:200px;overflow-y:auto"></div>
+      </td>
+      <td><input id="orcDesc_${i}" class="orc-cell" value="${(l.descricao||'').replace(/"/g,'&quot;')}" onchange="orcUpdateLinha(${i},'descricao',this.value)" placeholder="Descrição"></td>
       <td><input class="orc-cell orc-num" type="number" value="${l.qtde||1}" min="1" onchange="orcUpdateLinha(${i},'qtde',+this.value);orcRecalcularLinha(${i})"></td>
       <td><input class="orc-cell orc-money" type="number" value="${l.precoUnit||0}" min="0" step="0.01" onchange="orcUpdateLinha(${i},'precoUnit',+this.value);orcRecalcularLinha(${i})" placeholder="0,00"></td>
       <td><input class="orc-cell orc-num" type="number" value="${l.freq||1}" min="1" onchange="orcUpdateLinha(${i},'freq',+this.value);orcRecalcularLinha(${i})"></td>
@@ -687,6 +709,96 @@ async function ffCarregar() {
    VOLTAR PARA LISTA
 ══════════════════════════════════════ */
 
+/* ══════════════════════════════════════
+   AUTOCOMPLETE — CLIENTE (SECRETARIA)
+══════════════════════════════════════ */
+
+function orcBuscarSecretaria() {
+  const termo = (document.getElementById('orcCliente')?.value || '').toLowerCase().trim();
+  const lista = document.getElementById('orcClienteSugestoes');
+  if (!lista) return;
+
+  if (!termo || termo.length < 2) { lista.style.display = 'none'; return; }
+
+  const filtrados = orcSecretarias
+    .filter(s => (s.nome||'').toLowerCase().includes(termo) || (s.sigla||'').toLowerCase().includes(termo))
+    .slice(0, 8);
+
+  if (!filtrados.length) { lista.style.display = 'none'; return; }
+
+  lista.innerHTML = filtrados.map(s => `
+    <div onclick="orcSelecionarSecretaria('${(s.nome||'').replace(/'/g,"&#39;")}')"
+         style="padding:.55rem .85rem;cursor:pointer;font-size:.85rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #F1F5F9">
+      <span>${s.nome||''}</span>
+      ${s.sigla ? `<span style="font-size:.72rem;color:#94A3B8;background:#F1F5F9;border-radius:4px;padding:1px 6px">${s.sigla}</span>` : ''}
+    </div>`).join('');
+  lista.style.display = 'block';
+}
+
+function orcSelecionarSecretaria(nome) {
+  const el = document.getElementById('orcCliente');
+  if (el) el.value = nome;
+  const lista = document.getElementById('orcClienteSugestoes');
+  if (lista) lista.style.display = 'none';
+}
+
+function orcFecharAutoSecretaria() {
+  // Pequeno delay para permitir o click no item antes de fechar
+  setTimeout(() => {
+    const lista = document.getElementById('orcClienteSugestoes');
+    if (lista) lista.style.display = 'none';
+  }, 180);
+}
+
+/* ══════════════════════════════════════
+   AUTOCOMPLETE — SERVIÇO (CATÁLOGO)
+══════════════════════════════════════ */
+
+function orcBuscarCatalogo(idx) {
+  const input = document.getElementById(`orcServico_${idx}`);
+  if (!input) return;
+  const termo = input.value.toLowerCase().trim();
+  const lista = document.getElementById(`orcCatSugestoes_${idx}`);
+  if (!lista) return;
+
+  if (!termo || termo.length < 2) { lista.style.display = 'none'; return; }
+
+  const filtrados = orcCatalogo
+    .filter(c => (c.nome||'').toLowerCase().includes(termo))
+    .slice(0, 8);
+
+  if (!filtrados.length) { lista.style.display = 'none'; return; }
+
+  lista.innerHTML = filtrados.map(c => `
+    <div onclick="orcSelecionarCatalogo(${idx},'${(c.nome||'').replace(/'/g,"&#39;")}','${(c.descricao||'').replace(/'/g,"&#39;")}')"
+         style="padding:.5rem .75rem;cursor:pointer;font-size:.82rem;border-bottom:1px solid #F1F5F9;color:inherit">
+      <div style="font-weight:600">${c.nome||''}</div>
+      ${c.descricao ? `<div style="font-size:.75rem;color:#94A3B8">${c.descricao}</div>` : ''}
+    </div>`).join('');
+  lista.style.display = 'block';
+}
+
+function orcSelecionarCatalogo(idx, nome, descricao) {
+  // Preencher serviço
+  const inpServico = document.getElementById(`orcServico_${idx}`);
+  if (inpServico) { inpServico.value = nome; orcUpdateLinha(idx, 'servico', nome); }
+  // Preencher descrição se tiver
+  if (descricao) {
+    const inpDesc = document.getElementById(`orcDesc_${idx}`);
+    if (inpDesc) { inpDesc.value = descricao; orcUpdateLinha(idx, 'descricao', descricao); }
+  }
+  // Fechar dropdown
+  const lista = document.getElementById(`orcCatSugestoes_${idx}`);
+  if (lista) lista.style.display = 'none';
+}
+
+function orcFecharAutoCatalogo(idx) {
+  setTimeout(() => {
+    const lista = document.getElementById(`orcCatSugestoes_${idx}`);
+    if (lista) lista.style.display = 'none';
+  }, 180);
+}
+
 function orcVoltarLista() {
   document.getElementById('orcViewPlanilha').style.display = 'none';
   document.getElementById('orcViewLista').style.display = 'block';
@@ -715,3 +827,9 @@ window.orcWACotacao       = orcWACotacao;
 window.orcNovoAvulso      = orcNovoAvulso;
 window.orcCriarAvulso     = orcCriarAvulso;
 window.orcExcluir         = orcExcluir;
+window.orcBuscarSecretaria    = orcBuscarSecretaria;
+window.orcSelecionarSecretaria = orcSelecionarSecretaria;
+window.orcFecharAutoSecretaria = orcFecharAutoSecretaria;
+window.orcBuscarCatalogo      = orcBuscarCatalogo;
+window.orcSelecionarCatalogo  = orcSelecionarCatalogo;
+window.orcFecharAutoCatalogo  = orcFecharAutoCatalogo;
