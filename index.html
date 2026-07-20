@@ -988,6 +988,21 @@
   </div>
 </div>
 
+<!-- MODAL CATEGORIAS DO CATÁLOGO -->
+<div id="modalCategorias" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div class="card" style="width:100%;max-width:420px;margin:1rem;max-height:80vh;overflow-y:auto">
+    <div class="card-hdr">
+      <h3>⚙️ Categorias do Catálogo</h3>
+      <button onclick="cadFecharModal('modalCategorias')" style="background:none;border:none;font-size:1.2rem;cursor:pointer">✕</button>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-bottom:1rem">
+      <input type="text" id="cadCatNovaCat" placeholder="Nome da categoria" style="flex:1;padding:.6rem .9rem;border:1.5px solid #E2E8F0;border-radius:8px;font-size:.9rem;outline:none">
+      <button class="btn btn-primario btn-sm" onclick="cadSalvarCategoria()">+ Adicionar</button>
+    </div>
+    <div id="cadListaCategorias"></div>
+  </div>
+</div>
+
 <!-- MODAL NOVO ORÇAMENTO AVULSO -->
 <div id="modalAvulso" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
   <div class="card" style="width:100%;max-width:380px;margin:1rem">
