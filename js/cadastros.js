@@ -40,8 +40,16 @@ async function cadCarregarSecretarias() {
       return;
     }
 
-    lista.innerHTML = docs.map(s => `
+    lista.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer">
+          <input type="checkbox" id="secSelTodos" onchange="cadSelecionarTodosSec(this.checked)"> Selecionar todos
+        </label>
+        <button class="btn btn-perigo btn-sm" id="btnExcluirSec" style="display:none" onclick="cadExcluirSelecionadasSec()">🗑 Excluir selecionadas</button>
+      </div>` +
+      docs.map(s => `
       <div class="cad-item">
+        <input type="checkbox" class="sec-check" data-id="${s.id}" onchange="cadAtualizarBtnSec()" style="margin-right:.5rem;cursor:pointer;flex-shrink:0">
         <div class="cad-item-info">
           <div class="cad-item-nome">${s.nome}</div>
           ${s.sigla ? `<div class="cad-item-detalhe">${s.sigla}</div>` : ''}
@@ -106,8 +114,16 @@ async function cadCarregarFornecedores() {
       return;
     }
 
-    lista.innerHTML = docs.map(f => `
+    lista.innerHTML = `
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer">
+          <input type="checkbox" id="fornSelTodos" onchange="cadSelecionarTodosForn(this.checked)"> Selecionar todos
+        </label>
+        <button class="btn btn-perigo btn-sm" id="btnExcluirForn" style="display:none" onclick="cadExcluirSelecionadosForn()">🗑 Excluir selecionados</button>
+      </div>` +
+      docs.map(f => `
       <div class="cad-item">
+        <input type="checkbox" class="forn-check" data-id="${f.id}" onchange="cadAtualizarBtnForn()" style="margin-right:.5rem;cursor:pointer;flex-shrink:0">
         <div class="cad-item-info">
           <div class="cad-item-nome">${f.nome}</div>
           <div class="cad-item-detalhe">
@@ -393,22 +409,24 @@ function cadImportarFornecedores() {
         const wb   = XLSX.read(ev.target.result, { type: 'binary' });
         const ws   = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        // Pular cabeçalho
         const dados = rows.slice(1).filter(r => r[0]);
-        let count = 0;
+        // Buscar existentes para evitar duplicatas
+        const existentes = await GepFirebase.listar('fornecedores');
+        const mapaExistentes = {};
+        existentes.forEach(f => { mapaExistentes[f.nome?.toLowerCase().trim()] = f.id; });
+        let criados = 0, atualizados = 0;
         for (const r of dados) {
-          const id = GepUtils.gerarId('forn');
+          const nome = String(r[0]||'').trim();
+          const chave = nome.toLowerCase();
+          const id = mapaExistentes[chave] || GepUtils.gerarId('forn');
+          const ehNovo = !mapaExistentes[chave];
           await GepFirebase.salvar('fornecedores', id, {
-            nome:        String(r[0]||'').trim(),
-            doc:         String(r[1]||'').trim(),
-            responsavel: String(r[2]||'').trim(),
-            telefone:    String(r[3]||'').trim(),
-            prazoPg:     String(r[4]||'').trim(),
-            tipoServico: String(r[5]||'').trim()
+            nome, doc: String(r[1]||'').trim(), responsavel: String(r[2]||'').trim(),
+            telefone: String(r[3]||'').trim(), prazoPg: String(r[4]||'').trim(), tipoServico: String(r[5]||'').trim()
           });
-          count++;
+          if (ehNovo) criados++; else atualizados++;
         }
-        toast(`${count} fornecedores importados!`, 'ok');
+        toast(`${criados} criados, ${atualizados} atualizados!`, 'ok');
         cadCarregarFornecedores();
       } catch(err) { toast('Erro ao importar. Verifique o arquivo.', 'erro'); }
     };
@@ -464,16 +482,21 @@ function cadImportarSecretarias() {
         const ws   = wb.Sheets[wb.SheetNames[0]];
         const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
         const dados = rows.slice(1).filter(r => r[0]);
-        let count = 0;
+        const existentes = await GepFirebase.listar('secretarias');
+        const mapaExistentes = {};
+        existentes.forEach(s => { mapaExistentes[s.nome?.toLowerCase().trim()] = s.id; });
+        let criados = 0, atualizados = 0;
         for (const r of dados) {
-          const id = GepUtils.gerarId('sec');
+          const nome = String(r[0]||'').trim();
+          const chave = nome.toLowerCase();
+          const id = mapaExistentes[chave] || GepUtils.gerarId('sec');
+          const ehNovo = !mapaExistentes[chave];
           await GepFirebase.salvar('secretarias', id, {
-            nome:  String(r[0]||'').trim(),
-            sigla: String(r[1]||'').trim()
+            nome, sigla: String(r[1]||'').trim()
           });
-          count++;
+          if (ehNovo) criados++; else atualizados++;
         }
-        toast(`${count} secretarias importadas!`, 'ok');
+        toast(`${criados} criadas, ${atualizados} atualizadas!`, 'ok');
         cadCarregarSecretarias();
       } catch(err) { toast('Erro ao importar. Verifique o arquivo.', 'erro'); }
     };
@@ -489,3 +512,64 @@ window.cadImportarFornecedores   = cadImportarFornecedores;
 window.cadBaixarModeloSecretaria = cadBaixarModeloSecretaria;
 window.cadExportarSecretarias    = cadExportarSecretarias;
 window.cadImportarSecretarias    = cadImportarSecretarias;
+
+/* ══════════════════════════════════════
+   EXCLUSÃO EM LOTE
+══════════════════════════════════════ */
+
+function cadAtualizarBtnForn() {
+  const selecionados = document.querySelectorAll('.forn-check:checked');
+  const btn = document.getElementById('btnExcluirForn');
+  if (btn) {
+    btn.style.display = selecionados.length ? 'inline-flex' : 'none';
+    btn.textContent = `🗑 Excluir selecionados (${selecionados.length})`;
+  }
+}
+
+function cadSelecionarTodosForn(checked) {
+  document.querySelectorAll('.forn-check').forEach(cb => cb.checked = checked);
+  cadAtualizarBtnForn();
+}
+
+async function cadExcluirSelecionadosForn() {
+  const checks = document.querySelectorAll('.forn-check:checked');
+  if (!checks.length) return;
+  if (!GepUtils.confirmar(`Excluir ${checks.length} fornecedor(es) selecionado(s)?`)) return;
+  for (const cb of checks) {
+    await GepFirebase.excluir('fornecedores', cb.dataset.id);
+  }
+  toast(`${checks.length} excluído(s)!`, 'ok');
+  cadCarregarFornecedores();
+}
+
+function cadAtualizarBtnSec() {
+  const selecionados = document.querySelectorAll('.sec-check:checked');
+  const btn = document.getElementById('btnExcluirSec');
+  if (btn) {
+    btn.style.display = selecionados.length ? 'inline-flex' : 'none';
+    btn.textContent = `🗑 Excluir selecionadas (${selecionados.length})`;
+  }
+}
+
+function cadSelecionarTodosSec(checked) {
+  document.querySelectorAll('.sec-check').forEach(cb => cb.checked = checked);
+  cadAtualizarBtnSec();
+}
+
+async function cadExcluirSelecionadasSec() {
+  const checks = document.querySelectorAll('.sec-check:checked');
+  if (!checks.length) return;
+  if (!GepUtils.confirmar(`Excluir ${checks.length} secretaria(s) selecionada(s)?`)) return;
+  for (const cb of checks) {
+    await GepFirebase.excluir('secretarias', cb.dataset.id);
+  }
+  toast(`${checks.length} excluída(s)!`, 'ok');
+  cadCarregarSecretarias();
+}
+
+window.cadAtualizarBtnForn      = cadAtualizarBtnForn;
+window.cadSelecionarTodosForn   = cadSelecionarTodosForn;
+window.cadExcluirSelecionadosForn = cadExcluirSelecionadosForn;
+window.cadAtualizarBtnSec       = cadAtualizarBtnSec;
+window.cadSelecionarTodosSec    = cadSelecionarTodosSec;
+window.cadExcluirSelecionadasSec = cadExcluirSelecionadasSec;
