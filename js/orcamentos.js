@@ -361,8 +361,6 @@ async function orcAbrirPlanilha(id) {
     // Mostrar planilha, esconder lista
     document.getElementById('orcViewLista').style.display = 'none';
     document.getElementById('orcViewPlanilha').style.display = 'flex';
-    document.getElementById('views').classList.add('planilha-aberta');
-    document.getElementById('vwOrcamentos').classList.add('planilha-aberta');
 
   } catch(e) {
     console.error(e);
@@ -904,8 +902,6 @@ function ffTipoPgto(idx, tipo, dataPgto) {
 function orcVoltarLista() {
   document.getElementById('orcViewPlanilha').style.display = 'none';
   document.getElementById('orcViewLista').style.display = 'block';
-  document.getElementById('views').classList.remove('planilha-aberta');
-  document.getElementById('vwOrcamentos').classList.remove('planilha-aberta');
   orcId = null;
   orcLinhas = [];
   orcRenderizarLista();
