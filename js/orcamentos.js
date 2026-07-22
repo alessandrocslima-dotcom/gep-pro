@@ -661,9 +661,9 @@ function orcIrAba(aba) {
   const inicial      = document.getElementById('orcConteudoInicial');
   const fechamento   = document.getElementById('orcConteudoFechamento');
   const fornecedores = document.getElementById('orcConteudoFornecedores');
-  if (inicial)      inicial.style.display      = aba === 'inicial'      ? 'block' : 'none';
-  if (fechamento)   fechamento.style.display   = aba === 'fechamento'   ? 'block' : 'none';
-  if (fornecedores) fornecedores.style.display = aba === 'fornecedores' ? 'block' : 'none';
+  if (inicial)      inicial.style.display      = aba === 'inicial'      ? 'flex' : 'none';
+  if (fechamento)   fechamento.style.display   = aba === 'fechamento'   ? 'flex' : 'none';
+  if (fornecedores) fornecedores.style.display = aba === 'fornecedores' ? 'flex' : 'none';
 
   if (aba === 'fechamento')   fchCarregar();
   if (aba === 'fornecedores') ffCarregar();
